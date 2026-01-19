@@ -1,0 +1,49 @@
+.rock {
+    background-color: #FE4E41;
+    color: black;
+}
+
+.blues {
+    background-color: #DACDFF;
+    color: black;
+}
+
+.classical {
+    background-color: #ECECEC;
+    color: black;
+}
+
+.country {
+    background-color: #80B9F1;
+    color: black;
+}
+
+.disco {
+    background-color: #F39191;
+    color: black;
+}
+
+.hiphop {
+    background-color: #FFD24D;
+    color: black;
+}
+
+.jazz {
+    background-color: #4BE59A;
+    color: black;
+}
+
+.metal {
+    background-color: #B1E8EA;
+    color: black;
+}
+
+.pop {
+    background-color: #B99CF4;
+    color: black;
+}
+
+.reggae {
+    background-color: #F2AC89;
+    color: black;
+}

@@ -16,6 +16,12 @@ let model = null;
 
 const audioFileInput = document.getElementById('audio-file-input');
 const runTestButton = document.getElementById('run-test-button');
+const resultLabel = document.getElementById('result');
+const pageInput = document.getElementById('page-input');
+const pageResult = document.getElementById('page-result');
+const contentContainer = document.getElementById('content-container')
+const returnButton = document.getElementById('return-button');
+
 
 async function modelLoad() {
     model = await tf.loadLayersModel(MODEL_PATH);
@@ -143,6 +149,8 @@ async function loadAndProcessAudio(file) {
 }
 
 async function runAnalysis(file) {
+    contentContainer.classList.add("show-result");
+
     try {
         if (!model) {
             console.log("модель не загружена. ожидайте загрузки");
@@ -195,6 +203,8 @@ async function runAnalysis(file) {
         console.log("Предсказанные жанры по сегментам:", predictions.join(', '));
         console.log("Итоговый жанр:", finalGenre);
 
+        resultLabel.textContent = `Итоговый жанр: ${finalGenre}`;
+
         return finalGenre;
     } catch (error) {
         console.error("Ошибка анализа:", error);
@@ -210,3 +220,7 @@ runTestButton.addEventListener('click', async () => {
     const chosenFile = audioFileInput.files[0];
     await runAnalysis(chosenFile);
 });
+
+returnButton.addEventListener('click', () => {
+    contentContainer.classList.remove('show-result');
+})

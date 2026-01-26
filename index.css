@@ -30,6 +30,11 @@ body, html {
     transform: translateY(-50%);
 }
 
+.waveform-plot {
+    display: flex;
+    height: 36px;
+    width: 90%;
+}
 
 .rock {
     background-color: #FE4E41;

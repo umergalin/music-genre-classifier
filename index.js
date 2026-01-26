@@ -12,6 +12,12 @@ const CONFIG = {
 
 const GENRES = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock'];
 
+const WAVEFORM_STYLE = {
+  color: '#D9D9D9',
+  delimiterSize: 3,
+  spacingSize: 3,
+};
+
 let model = null;
 
 const audioFileInput = document.getElementById('audio-file-input');
@@ -21,6 +27,7 @@ const pageInput = document.getElementById('page-input');
 const pageResult = document.getElementById('page-result');
 const contentContainer = document.getElementById('content-container')
 const returnButton = document.getElementById('return-button');
+const waveformOutput = document.getElementById('waveform-output')
 
 
 async function modelLoad() {
@@ -104,50 +111,6 @@ async function extractForBuffer(monoSignal) {
     return segmentsMFCC;
 }
 
-async function loadAndProcessAudio(file) {
-    const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    try {
-        console.log(`Декодирование ${file.name}`);
-
-        const arrayBuffer = await file.arrayBuffer();
-        let audioBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
-
-        /* const samplesPerTrack = CONFIG.fs * (audioBuffer.length / audioBuffer.sampleRate);
-        const samplesPerSegment = CONFIG.fs * CONFIG.segmentDuration;
-        const numSegments = Math.floor(samplesPerTrack / samplesPerSegment); */
-
-        // ресэмплим к fs если надо
-        if (Math.round(audioBuffer.sampleRate) !== Math.round(CONFIG.fs)) {
-            console.log(`Ресемплирование от  ${audioBuffer.sampleRate} к ${CONFIG.fs} Hz`);
-            audioBuffer = await resampleAudioBuffer(audioBuffer, CONFIG.fs);
-            console.log(`Файл ресемплирован`);
-        }
-
-        // моно и padding/trim до samplesPerTrack
-        let mono = toMono(audioBuffer);
-        /* if (mono.length < samplesPerTrack) {
-            const padded = new Float32Array(samplesPerTrack);
-            padded.set(mono, 0);
-            mono = padded;
-        } else if (mono.length > samplesPerTrack) {
-            mono = mono.subarray(0, samplesPerTrack);
-        } else {
-            log("Паддинг не требуется");
-        } */
-
-        console.log("получение сегментов mfcc");
-
-        const segmentsMFCC = await extractForBuffer(mono);
-
-        console.log("сегменты mfcc получены");
-
-        return segmentsMFCC;
-    } catch (err) {
-        console.warn('Ошибка при обработке файла', file.name, err);
-    }
-}
-
 async function loadAudio(file) {
     const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -203,6 +166,9 @@ async function runAnalysis(file) {
         console.log(`Обработка аудио: ${file.name}`);
 
         const audioBuffer = await loadAudio(file);
+
+        drawWaveplot(audioBuffer);
+
         const processedAudioBuffer = await processAudio(audioBuffer);
         const segmentsMFCC = await extractForBuffer(processedAudioBuffer);
 
@@ -258,6 +224,90 @@ async function runAnalysis(file) {
     }
 }
 
+function resizeCanvas(canvas, ctx) {
+    const dpr = window.devicePixelRatio || 1;
+    const { clientWidth, clientHeight } = canvas;
+
+    const width = Math.floor(clientWidth * dpr);
+    const height = Math.floor(clientHeight * dpr);
+
+    if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+}
+
+function drawWaveplot(audioBuffer) {
+    const { color, delimiterSize, spacingSize } = WAVEFORM_STYLE;
+
+    const width = waveformOutput.clientWidth;
+    const height = waveformOutput.clientHeight;
+    waveformOutput.width = waveformOutput.clientWidth;
+    waveformOutput.height = waveformOutput.clientHeight;
+
+    const ctx = waveformOutput.getContext('2d');
+
+    resizeCanvas(waveformOutput, ctx);
+
+    const start = performance.now();
+    ctx.clearRect(0, 0, width, height);
+
+    const delimiterCount = Math.floor((width + spacingSize) / (delimiterSize + spacingSize)); // сколько вообще делений помещается на график
+
+    console.log(`Рисую график на полотне размером ${width}x${height}`);
+
+    const channelData = audioBuffer.getChannelData(0); // берем первый канал
+    const step = Math.ceil(channelData.length / delimiterCount); // количество сэмплов на 1 деление
+    console.log("Шаг: " + step);
+    const centerY = height / 2;
+
+    const rmsValues = [];
+    let maxRMS = 0;
+
+    // 1. Один проход для сбора данных
+    for (let i = 0; i < delimiterCount; i++) {
+        const start = i * step;
+        let sumOfSquares = 0;
+        let count = 0;
+
+        for (let j = 0; j < step && (start + j) < channelData.length; j++) {
+            const val = channelData[start + j];
+            sumOfSquares += val * val;
+            count++;
+        }
+
+        const rms = Math.sqrt(sumOfSquares / count);
+        if (rms > maxRMS) maxRMS = rms;
+        rmsValues.push(rms); // Сохраняем, чтобы не считать заново
+    }
+
+    const scaleFactor = maxRMS > 0 ? 1 / maxRMS : 1;
+
+    const minDelimiterHeight = 1;
+    ctx.lineWidth = delimiterSize;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+
+    for (let i = 0; i < rmsValues.length; i++) {
+        const normalizedHeight = rmsValues[i] * scaleFactor;
+        const x = i * (delimiterSize + spacingSize) + delimiterSize / 2;
+        let height = normalizedHeight * centerY;
+
+        if (height < minDelimiterHeight) height = minDelimiterHeight;
+
+        // Рисуем линию
+        ctx.moveTo(x, centerY - height);
+        ctx.lineTo(x, centerY + height);
+    }
+
+    ctx.stroke();
+
+    const end = performance.now();
+    console.log(`График нарисован за ${(end - start).toFixed(3)} мс`);
+}
+
 runTestButton.addEventListener('click', async () => {
     if (!audioFileInput.files.length) {
         alert("Выберите аудиофайл");
@@ -265,6 +315,10 @@ runTestButton.addEventListener('click', async () => {
     }
 
     const chosenFile = audioFileInput.files[0];
+
+    waveformOutput.getContext('2d').clearRect(0, 0, waveformOutput.width, waveformOutput.height);
+    resultLabel.textContent = `Обработка...`;
+
     await runAnalysis(chosenFile);
 });
 

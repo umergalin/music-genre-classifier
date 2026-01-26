@@ -148,6 +148,49 @@ async function loadAndProcessAudio(file) {
     }
 }
 
+async function loadAudio(file) {
+    const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    try {
+        console.log(`Декодирование ${file.name}`);
+
+        const arrayBuffer = await file.arrayBuffer();
+        let audioBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
+
+        return audioBuffer;
+    } catch (err) {
+        console.warn('Ошибка при чтении файла', file.name, err);
+    }
+}
+
+async function processAudio(audioBuffer) {
+    try {
+        // ресэмплим к fs если надо
+        if (Math.round(audioBuffer.sampleRate) !== Math.round(CONFIG.fs)) {
+            console.log(`Ресемплирование от  ${audioBuffer.sampleRate} к ${CONFIG.fs} Hz`);
+            audioBuffer = await resampleAudioBuffer(audioBuffer, CONFIG.fs);
+            console.log(`Файл ресемплирован`);
+        }
+
+        // моно и padding/trim до samplesPerTrack
+        let mono = toMono(audioBuffer);
+        /* if (mono.length < samplesPerTrack) {
+            const padded = new Float32Array(samplesPerTrack);
+            padded.set(mono, 0);
+            mono = padded;
+        } else if (mono.length > samplesPerTrack) {
+            mono = mono.subarray(0, samplesPerTrack);
+        } else {
+            log("Паддинг не требуется");
+        } */
+
+        return mono;
+    } catch (err) {
+        console.warn('Ошибка при обработке файла', err);
+        throw(err);
+    }
+}
+
 async function runAnalysis(file) {
     contentContainer.classList.add("show-result");
 
@@ -158,7 +201,11 @@ async function runAnalysis(file) {
         }
 
         console.log(`Обработка аудио: ${file.name}`);
-        const segmentsMFCC = await loadAndProcessAudio(file);
+
+        const audioBuffer = await loadAudio(file);
+        const processedAudioBuffer = await processAudio(audioBuffer);
+        const segmentsMFCC = await extractForBuffer(processedAudioBuffer);
+
         if (!segmentsMFCC || segmentsMFCC.length === 0) {
             console.log("сегменты не были получены");
             return;

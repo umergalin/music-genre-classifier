@@ -59,6 +59,22 @@
   color: #000;
 }
 
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+  color: #B3B3B3;
+}
+
+.result .genre {
+  font-size: 40px;
+  font-weight: bold;
+  line-height: 0.85;
+  padding-bottom: 0.2em;
+  color: #000;
+}
+
 .rock {
   background-color: #FE4E41;
   color: black;

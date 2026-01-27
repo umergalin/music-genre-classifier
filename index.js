@@ -10,7 +10,7 @@ const CONFIG = {
   segment_duration: 3,
 };
 
-const GENRES = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock'];
+const GENRES = ['Блюз', 'Классическая', 'Кантри', 'Диско', 'Хип-хоп', 'Джаз', 'Метал', 'Поп', 'Регги', 'Рок'];
 
 const WAVEFORM_STYLE = {
   color: '#D9D9D9',
@@ -22,16 +22,17 @@ let model = null;
 
 const audioFileInput = document.getElementById('audio-file-input');
 const runTestButton = document.getElementById('run-test-button');
-const resultLabel = document.getElementById('result');
+
 const pageInput = document.getElementById('page-input');
 const pageResult = document.getElementById('page-result');
 const contentContainer = document.getElementById('content-container')
 const returnButton = document.getElementById('return-button');
 const waveformOutput = document.getElementById('waveform-output')
 
-const nameOutput = document.querySelector('.name');
-const authorOutput = document.querySelector('.author');
+const nameOutput = document.querySelector('.metadata .name');
+const authorOutput = document.querySelector('.metadata .author');
 
+const resultOutput = document.querySelector('.result .genre');
 
 async function modelLoad() {
   model = await tf.loadLayersModel(MODEL_PATH);
@@ -219,7 +220,7 @@ async function runAnalysis(file) {
     console.log("Предсказанные жанры по сегментам:", predictions.join(', '));
     console.log("Итоговый жанр:", finalGenre);
 
-    resultLabel.textContent = `Итоговый жанр: ${finalGenre}`;
+    displayResult(finalGenre);
 
     return finalGenre;
   } catch (error) {
@@ -330,6 +331,10 @@ function displayTrackInfo(file) {
   }
 }
 
+function displayResult(genre) {
+  resultOutput.textContent = genre.toUpperCase();
+}
+
 runTestButton.addEventListener('click', async () => {
   if (!audioFileInput.files.length) {
     alert("Выберите аудиофайл");
@@ -341,7 +346,7 @@ runTestButton.addEventListener('click', async () => {
   displayTrackInfo(chosenFile);
 
   waveformOutput.getContext('2d').clearRect(0, 0, waveformOutput.width, waveformOutput.height);
-  resultLabel.textContent = `Обработка...`;
+  resultOutput.textContent = `Обработка...`;
 
   await runAnalysis(chosenFile);
 });

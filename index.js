@@ -34,6 +34,8 @@ const authorOutput = document.querySelector('.metadata .author');
 
 const resultOutput = document.querySelector('.result .genre');
 
+const loader = document.querySelector('.loader');
+
 async function modelLoad() {
   model = await tf.loadLayersModel(MODEL_PATH);
   console.log("model loaded");
@@ -346,9 +348,13 @@ runTestButton.addEventListener('click', async () => {
   displayTrackInfo(chosenFile);
 
   waveformOutput.getContext('2d').clearRect(0, 0, waveformOutput.width, waveformOutput.height);
+
   resultOutput.textContent = `Обработка...`;
+  loader.classList.remove('hidden');
 
   await runAnalysis(chosenFile);
+
+  loader.classList.add('hidden');
 });
 
 returnButton.addEventListener('click', () => {

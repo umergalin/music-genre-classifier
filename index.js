@@ -1,3 +1,5 @@
+import { BubbleChart } from './bubble-chart.mjs';
+
 console.log("hi");
 
 const MODEL_PATH = '/model/model.json';
@@ -10,7 +12,34 @@ const CONFIG = {
   segment_duration: 3,
 };
 
-const GENRES = ['Блюз', 'Классическая', 'Кантри', 'Диско', 'Хип-хоп', 'Джаз', 'Метал', 'Поп', 'Регги', 'Рок'];
+//const GENRES = ['Блюз', 'Классическая', 'Кантри', 'Диско', 'Хип-хоп', 'Джаз', 'Метал', 'Поп', 'Регги', 'Рок'];
+const GENRES = ["blues", "classical", "country", "disco", "hiphop", "jazz", "metal", "pop", "reggae", "rock"];
+
+const GENRES_TRANSLATION = {
+  "blues": "блюз",
+  "classical": "классическая",
+  "country": "кантри",
+  "disco": "диско",
+  "hiphop": "хип-хоп",
+  "jazz": "джаз",
+  "metal": "метал",
+  "pop": "поп",
+  "reggae": "регги",
+  "rock": "рок"
+}
+
+const GENRES_EMOJIS = {
+  "blues": "🎺",
+  "classical": "🎹",
+  "country": "🤠",
+  "disco": "💿",
+  "hiphop": "🎛️",
+  "jazz": "🎷",
+  "metal": "💀",
+  "pop": "🎤",
+  "reggae": "☮️",
+  "rock": "🎸"
+}
 
 const WAVEFORM_STYLE = {
   color: '#D9D9D9',
@@ -19,6 +48,9 @@ const WAVEFORM_STYLE = {
 };
 
 let model = null;
+
+const bubbleChartContainer = document.querySelector('.bubble-chart');
+const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES_TRANSLATION, GENRES_EMOJIS);
 
 const audioFileInput = document.getElementById('audio-file-input');
 const runTestButton = document.getElementById('run-test-button');
@@ -183,6 +215,8 @@ async function runAnalysis(file) {
       return;
     }
 
+    bubbleChart.updateStepSize(segmentsMFCC.length);
+
     const predictions = [];
 
     for (const mfccMatrix of segmentsMFCC) {
@@ -204,6 +238,7 @@ async function runAnalysis(file) {
       const maxIndex = data.indexOf(Math.max(...data));
 
       predictions.push(GENRES[maxIndex]);
+      bubbleChart.addBubble(GENRES[maxIndex]);
 
       // Освобождаем память тензора
       tensor.dispose();
@@ -359,4 +394,10 @@ runTestButton.addEventListener('click', async () => {
 
 returnButton.addEventListener('click', () => {
   contentContainer.classList.remove('show-result');
+  bubbleChart.reset(); // лучше сбрасывать только тогда, когда страница уже уедет за экран
 })
+
+function updateWindowSize() {
+    bubbleChart.resize();
+}
+window.onresize = updateWindowSize;

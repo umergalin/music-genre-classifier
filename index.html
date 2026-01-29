@@ -2,48 +2,59 @@
 <html lang="ru">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>Music Genre Classifier</title>
-	<link rel="stylesheet" href="index.css">
-	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-	<script src="https://cdn.jsdelivr.net/npm/meyda/dist/web/meyda.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Music Genre Classifier</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/meyda/dist/web/meyda.min.js"></script>
 </head>
 
 <body>
-	<div class="viewport">
-		<div id="content-container" class="content-container">
-			<section id="page-input" class="page">
-				<label>Аудиофайл:</label>
-				<input id="audio-file-input" type="file" accept="audio/*" />
-				<button id="run-test-button">Запустить тестирование</button>
-			</section>
+  <div class="viewport">
+    <div id="content-container" class="content-container">
+      <section id="page-input" class="page">
+        <div class="page-input-content">
+          <header class="site-name-container">
+            <h1 class="site-name">Определитель жанра</h1>
+          </header>
 
-			<section id="page-result" class="page">
-				<div class="metadata">
-					<p class="name">Неизвестно</p>
-					<p class="author-block">
-						от <span class="author">Неизвестен</span>
-					</p>
-				</div>
+          <div class="input-container">
+            <input id="audio-file-input" type="file" accept="audio/*" class="visually-hidden" />
+            <label for="audio-file-input" class="file-label">
+              <span>Выберите или перетащите аудиофайл</span>
+            </label>
+          </div>
 
-				<span class="loader hidden"></span>
-
-				<canvas id="waveform-output" class="waveform-plot"></canvas>
-
-				<div class="bubble-chart"></div>
-
-				<div class="result">
-					<span class="label">жанр</span>
-					<span class="genre">Обработка...</span>
-				</div>
-				
-				<button id="return-button">На главную</button>
-			</section>
-		</div>
-	</div>
-	<script type="module" src="index.js"></script>
+          <button class="run-analysis">Начать анализ</button>
+        </div>
+      </section>
+    
+      <section id="page-result" class="page">
+        <div class="metadata">
+          <p class="name">Неизвестно</p>
+          <p class="author-block">
+            от <span class="author">Неизвестен</span>
+          </p>
+        </div>
+    
+        <span class="loader hidden"></span>
+    
+        <canvas id="waveform-output" class="waveform-plot"></canvas>
+    
+        <div class="bubble-chart"></div>
+    
+        <div class="result">
+          <span class="label">жанр</span>
+          <span class="genre">Обработка...</span>
+        </div>
+    
+        <button id="return-button">На главную</button>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="index.js"></script>
 </body>
 
 </html>

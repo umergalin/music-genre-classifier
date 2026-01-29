@@ -53,7 +53,7 @@ const bubbleChartContainer = document.querySelector('.bubble-chart');
 const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES_TRANSLATION, GENRES_EMOJIS);
 
 const audioFileInput = document.getElementById('audio-file-input');
-const runTestButton = document.getElementById('run-test-button');
+const runAnalysisButton = document.querySelector('.run-analysis');
 
 const pageInput = document.getElementById('page-input');
 const pageResult = document.getElementById('page-result');
@@ -372,7 +372,7 @@ function displayResult(genre) {
   resultOutput.textContent = genre.toUpperCase();
 }
 
-runTestButton.addEventListener('click', async () => {
+runAnalysisButton.addEventListener('click', async () => {
   if (!audioFileInput.files.length) {
     alert("Выберите аудиофайл");
     return;

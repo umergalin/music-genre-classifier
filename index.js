@@ -53,13 +53,13 @@ const bubbleChartContainer = document.querySelector('.bubble-chart');
 const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES_TRANSLATION, GENRES_EMOJIS);
 
 const audioFileInput = document.getElementById('audio-file-input');
-const runAnalysisButton = document.querySelector('.run-analysis');
+const runAnalysisButton = document.querySelector('.js-run-analysis');
 
-const pageInput = document.getElementById('page-input');
-const pageResult = document.getElementById('page-result');
+const pageInput = document.querySelector('.page-input');
+const pageResult = document.querySelector('.page-result');
 const contentContainer = document.getElementById('content-container')
-const returnButton = document.getElementById('return-button');
-const waveformOutput = document.getElementById('waveform-output')
+const backToInputButton = document.querySelector('.js-back-trigger');
+const waveformOutput = document.querySelector('.js-waveform-canvas')
 
 const nameOutput = document.querySelector('.metadata .name');
 const authorOutput = document.querySelector('.metadata .author');
@@ -392,7 +392,7 @@ runAnalysisButton.addEventListener('click', async () => {
   loader.classList.add('hidden');
 });
 
-returnButton.addEventListener('click', () => {
+backToInputButton.addEventListener('click', () => {
   contentContainer.classList.remove('show-result');
   bubbleChart.reset(); // лучше сбрасывать только тогда, когда страница уже уедет за экран
 })

@@ -70,20 +70,7 @@
   border: 0;
 }
 
-.run-analysis {
-  background-color: #FFD24D;
-  transition: transform 0.1s, opacity 0.3s;
-}
-
-.run-analysis:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.run-analysis:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-button {
+.btn {
   padding: 8px 12px;
   font-size: 16px;
   border: none;
@@ -92,11 +79,24 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+.btn:disabled {
   background-color: #F2F2F2;
   color: #D3D3D3;
   cursor: none;
   pointer-events: none;    
+}
+
+.btn--run {
+  background-color: #FFD24D;
+  transition: transform 0.1s, opacity 0.3s;
+}
+
+.btn--run:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn--run:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .show-result {
@@ -107,6 +107,20 @@ button:disabled {
   display: flex;
   height: 36px;
   width: 90%;
+  max-width: 720px;
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.task-name {
+  color: #B3B3B3;
 }
 
 .metadata {
@@ -119,10 +133,10 @@ button:disabled {
 
 .metadata .name {
   font-size: 16px;
-  font-weight: bold;
 }
 
 .author-block {
+  font-weight: normal;
   color: #666;
 }
 
@@ -145,6 +159,30 @@ button:disabled {
   line-height: 0.85;
   padding-bottom: 0.2em;
   color: #000;
+}
+
+.page-result {
+  gap: 20px;
+}
+
+.btn--back {
+  font-size: 14px;
+  display: flex;
+  gap: 4px;
+}
+
+.arrow-icon {
+  /* Иконка станет такой же высоты, как заглавная буква текста */
+  height: 1em;
+  width: 1em;
+
+  /* Чтобы иконка не "скакала" и стояла ровно по центру строки */
+  vertical-align: middle; 
+  
+  /* Если используешь flex на кнопке (рекомендуется), 
+     то vertical-align не нужен, используй это: */
+  display: inline-block;
+  flex-shrink: 0; /* Чтобы иконка не сжималась, если текста много */
 }
 
 .loader {

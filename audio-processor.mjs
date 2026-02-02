@@ -4,6 +4,8 @@ const CONFIG = {
   n_fft: 2048,
   hop_length: 512,
   segment_duration: 3,
+  melBands: 26,
+  windowingFunction: 'hann'
 };
 
 function toMono(audioBuffer) {
@@ -20,8 +22,7 @@ function toMono(audioBuffer) {
   return out;
 }
 
-// ресемплинг AudioBuffer к targetRate
-async function resampleAudioBuffer(audioBuffer, targetRate) {
+async function resample(audioBuffer, targetRate) {
   if (audioBuffer.sampleRate === targetRate) return audioBuffer;
   const numChannels = audioBuffer.numberOfChannels;
   const duration = audioBuffer.duration;
@@ -34,57 +35,12 @@ async function resampleAudioBuffer(audioBuffer, targetRate) {
   return rendered;
 }
 
-async function extractForBuffer(monoSignal) {
-  const samplesPerSegment = CONFIG.fs * CONFIG.segment_duration;
-  const numSegments = Math.floor(monoSignal.length / samplesPerSegment);
-
-  const totalUsedSamples = numSegments * samplesPerSegment;
-  const leftoverSamples = monoSignal.length - totalUsedSamples;
-  const startOffset = Math.floor(leftoverSamples / 2);
-
-  const mfccsPerSegment = Math.ceil(samplesPerSegment / CONFIG.hop_length);
-  const segmentsMFCC = [];
-
-  for (let seg = 0; seg < numSegments; seg++) {
-    console.log(`получение ${seg}-ого сегмента`);
-    const startS = startOffset + seg * samplesPerSegment;
-    const endS = startS + samplesPerSegment;
-
-    const segment = monoSignal.subarray(startS, endS);
-
-    const frames = [];
-    for (let pos = 0; pos + CONFIG.n_fft <= segment.length; pos += CONFIG.hop_length) {
-      const frame = segment.subarray(pos, pos + CONFIG.n_fft);
-
-      const mfcc = Meyda.extract('mfcc', Array.from(frame), {
-        bufferSize: CONFIG.n_fft,
-        sampleRate: CONFIG.fs,
-        hopSize: CONFIG.hop_length,
-        melBands: 26,
-        numberOfMFCCCoefficients: CONFIG.n_mfcc,
-        windowingFunction: 'hann'
-      });
-
-      if (mfcc && mfcc.length === CONFIG.n_mfcc) frames.push(mfcc);
-    }
-
-    // padding frames до mfccsPerSegment (как в python)
-    if (frames.length > 0) {
-      while (frames.length < mfccsPerSegment) {
-        frames.push(new Array(CONFIG.n_mfcc).fill(0));
-      }
-      segmentsMFCC.push(frames.slice(0, mfccsPerSegment));
-    }
-  }
-  return segmentsMFCC;
-}
-
-async function processAudio(audioBuffer) {
+async function preprocessAudio(audioBuffer) {
   try {
     // ресэмплим к fs если надо
     if (Math.round(audioBuffer.sampleRate) !== Math.round(CONFIG.fs)) {
       console.log(`Ресемплирование от  ${audioBuffer.sampleRate} к ${CONFIG.fs} Hz`);
-      audioBuffer = await resampleAudioBuffer(audioBuffer, CONFIG.fs);
+      audioBuffer = await resample(audioBuffer, CONFIG.fs);
       console.log(`Файл ресемплирован`);
     }
 
@@ -107,45 +63,72 @@ async function processAudio(audioBuffer) {
   }
 }
 
+function extractMFCCfromSegment(segment, mfccsPerSegment) {
+  const frames = [];
+  for (let pos = 0; pos + CONFIG.n_fft <= segment.length; pos += CONFIG.hop_length) {
+    const frame = segment.subarray(pos, pos + CONFIG.n_fft);
+
+    const mfcc = Meyda.extract('mfcc', frame, {
+      bufferSize: CONFIG.n_fft,
+      sampleRate: CONFIG.fs,
+      hopSize: CONFIG.hop_length,
+      melBands: CONFIG.melBands,
+      numberOfMFCCCoefficients: CONFIG.n_mfcc,
+      windowingFunction: CONFIG.windowingFunction
+    });
+
+    if (mfcc && mfcc.length === CONFIG.n_mfcc) frames.push(mfcc);
+  }
+
+  if (frames.length === 0) return null;
+
+  // дополнение до mfccsPerSegment
+  while (frames.length < mfccsPerSegment) {
+    frames.push(new Array(CONFIG.n_mfcc).fill(0));
+  }
+
+  return frames.slice(0, mfccsPerSegment);
+}
+
 export async function* streamPredictions(audioBuffer, model) {
   try {
-    const processedAudioData = await processAudio(audioBuffer);
-    const segmentsMFCC = await extractForBuffer(processedAudioData);
+    const processedAudioData = await preprocessAudio(audioBuffer);
 
-    if (!segmentsMFCC || segmentsMFCC.length === 0) {
-      console.log("сегменты не были получены");
-      return;
-    }
+    const samplesPerSegment = CONFIG.fs * CONFIG.segment_duration;
+    const numSegments = Math.floor(processedAudioData.length / samplesPerSegment);
 
-    yield { type: 'start', total: segmentsMFCC.length };
+    yield { type: 'start', total: numSegments };
 
+    // рассчитываем отступ для размещения окна анализа по середине
+    const totalUsedSamples = numSegments * samplesPerSegment;
+    const leftoverSamples = processedAudioData.length - totalUsedSamples;
+    const startOffset = Math.floor(leftoverSamples / 2);
+
+    const mfccsPerSegment = Math.ceil(samplesPerSegment / CONFIG.hop_length);
     const predictions = [];
 
-    for (const mfccMatrix of segmentsMFCC) {
+    for (let i = 0; i < numSegments; i++) {
+      console.log(`получение ${i}-ого сегмента`);
+      const segmentStart = startOffset + i * samplesPerSegment;
+      const segmentEnd = segmentStart + samplesPerSegment;
+
+      const segment = processedAudioData.subarray(segmentStart, segmentEnd);
+
+      const mfcc = extractMFCCfromSegment(segment, mfccsPerSegment);
+      if (!mfcc) continue;
 
       // i eat cement
-      // Преобразуем в тензор
-      // Форма в Python: (1, n_mfcc, time, 1) - т.к. вы делали np.newaxis
-      // Проверьте inputShape вашей модели через model.summary() в JS или Python.
-      // Обычно CNN требует (batch, height, width, channels)
+      const tensor = tf.tensor(mfcc).expandDims(0).expandDims(-1);
 
-      // Формируем тензор: [1, n_mfcc, time_steps, 1]
-      const tensor = tf.tensor(mfccMatrix)
-        .expandDims(0) // Batch dim
-        .expandDims(-1); // Channel dim
-
-      // Предсказание
       const prediction = model.predict(tensor);
-      const data = await prediction.data(); // Получаем вероятности
+      const data = await prediction.data();
       const maxIndex = data.indexOf(Math.max(...data));
 
-      predictions.push(maxIndex);
-
-      yield { type: 'segment', genreIndex: maxIndex };
-
-      // Освобождаем память тензора
       tensor.dispose();
       prediction.dispose();
+
+      predictions.push(maxIndex);
+      yield { type: 'segment', genreIndex: maxIndex };
     }
 
     // Подсчет самого частого жанра
@@ -156,9 +139,9 @@ export async function* streamPredictions(audioBuffer, model) {
     const totalMaxIndex = sortedGenres[0];
 
     console.log("\n--- Результаты ---");
-    console.log("Сегментов обработано:", segmentsMFCC.length);
+    console.log("Сегментов обработано:", numSegments);
     console.log("Предсказанные жанры по сегментам:", predictions.join(', '));
-    console.log("Итоговый жанр:", totalMaxIndex);
+    console.log("Итоговый жанр:", Number(totalMaxIndex));
 
     yield { type: 'final', genreIndex: totalMaxIndex };
   } catch (error) {

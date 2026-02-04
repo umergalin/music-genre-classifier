@@ -1,4 +1,7 @@
-const CONFIG = {
+import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/+esm';
+import Meyda from 'https://esm.sh/meyda';
+
+export const CONFIG = {
   fs: 22500,
   n_mfcc: 13,
   n_fft: 2048,
@@ -7,61 +10,6 @@ const CONFIG = {
   melBands: 26,
   windowingFunction: 'hann'
 };
-
-function toMono(audioBuffer) {
-  const channelNum = audioBuffer.numberOfChannels;
-  const len = audioBuffer.length;
-
-  if (channelNum === 1) return audioBuffer.getChannelData(0).slice(0);
-
-  const out = new Float32Array(len);
-  for (let ch = 0; ch < channelNum; ch++) {
-    const data = audioBuffer.getChannelData(ch);
-    for (let i = 0; i < len; i++) out[i] += data[i] / channelNum;
-  }
-  return out;
-}
-
-async function resample(audioBuffer, targetRate) {
-  if (audioBuffer.sampleRate === targetRate) return audioBuffer;
-  const numChannels = audioBuffer.numberOfChannels;
-  const duration = audioBuffer.duration;
-  const offlineCtx = new OfflineAudioContext(numChannels, Math.ceil(duration * targetRate), targetRate);
-  const src = offlineCtx.createBufferSource();
-  src.buffer = audioBuffer;
-  src.connect(offlineCtx.destination);
-  src.start(0);
-  const rendered = await offlineCtx.startRendering();
-  return rendered;
-}
-
-async function preprocessAudio(audioBuffer) {
-  try {
-    // ресэмплим к fs если надо
-    if (Math.round(audioBuffer.sampleRate) !== Math.round(CONFIG.fs)) {
-      console.log(`Ресемплирование от  ${audioBuffer.sampleRate} к ${CONFIG.fs} Hz`);
-      audioBuffer = await resample(audioBuffer, CONFIG.fs);
-      console.log(`Файл ресемплирован`);
-    }
-
-    // моно и padding/trim до samplesPerTrack
-    let mono = toMono(audioBuffer);
-    /* if (mono.length < samplesPerTrack) {
-        const padded = new Float32Array(samplesPerTrack);
-        padded.set(mono, 0);
-        mono = padded;
-    } else if (mono.length > samplesPerTrack) {
-        mono = mono.subarray(0, samplesPerTrack);
-    } else {
-        log("Паддинг не требуется");
-    } */
-
-    return mono;
-  } catch (err) {
-    console.warn('Ошибка при обработке файла', err);
-    throw (err);
-  }
-}
 
 function extractMFCCfromSegment(segment, mfccsPerSegment) {
   const frames = [];
@@ -90,18 +38,16 @@ function extractMFCCfromSegment(segment, mfccsPerSegment) {
   return frames.slice(0, mfccsPerSegment);
 }
 
-export async function* streamPredictions(audioBuffer, model) {
+export async function* streamPredictions(audioData, model) {
   try {
-    const processedAudioData = await preprocessAudio(audioBuffer);
-
     const samplesPerSegment = CONFIG.fs * CONFIG.segment_duration;
-    const numSegments = Math.floor(processedAudioData.length / samplesPerSegment);
+    const numSegments = Math.floor(audioData.length / samplesPerSegment);
 
     yield { type: 'start', total: numSegments };
 
     // рассчитываем отступ для размещения окна анализа по середине
     const totalUsedSamples = numSegments * samplesPerSegment;
-    const leftoverSamples = processedAudioData.length - totalUsedSamples;
+    const leftoverSamples = audioData.length - totalUsedSamples;
     const startOffset = Math.floor(leftoverSamples / 2);
 
     const mfccsPerSegment = Math.ceil(samplesPerSegment / CONFIG.hop_length);
@@ -112,7 +58,7 @@ export async function* streamPredictions(audioBuffer, model) {
       const segmentStart = startOffset + i * samplesPerSegment;
       const segmentEnd = segmentStart + samplesPerSegment;
 
-      const segment = processedAudioData.subarray(segmentStart, segmentEnd);
+      const segment = audioData.subarray(segmentStart, segmentEnd);
 
       const mfcc = extractMFCCfromSegment(segment, mfccsPerSegment);
       if (!mfcc) continue;
@@ -145,6 +91,6 @@ export async function* streamPredictions(audioBuffer, model) {
 
     yield { type: 'final', genreIndex: totalMaxIndex };
   } catch (error) {
-    console.error("Ошибка анализа:", error);
+    console.error("Ошибка в генераторе:", error);
   }
 }

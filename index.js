@@ -1,6 +1,5 @@
 import { BubbleChart } from './bubble-chart.mjs';
-import { streamPredictions } from './audio-processor.mjs';
-
+import { CONFIG } from './audio-processor.mjs';
 console.log("hi");
 
 const MODEL_PATH = '/model/model.json';
@@ -40,7 +39,24 @@ const WAVEFORM_STYLE = {
   spacingSize: 3,
 };
 
-let model = null;
+const worker = new Worker('audio-processor-worker.js', { type: 'module' });
+worker.postMessage({ type: 'loadModel', modelPath: MODEL_PATH });
+
+worker.onmessage = function (e) { // Слушаем сообщения из воркера
+  const message = e.data;
+  switch (message.type) {
+    case 'start':
+      bubbleChart.updateStepSize(message.total);
+      break;
+    case 'segment':
+      bubbleChart.addBubble(GENRES[message.genreIndex]);
+      break;
+    case 'final':
+      displayResult(GENRES[message.genreIndex]);
+      loader.classList.add('hidden');
+      break;
+  }
+}
 
 const bubbleChartContainer = document.querySelector('.bubble-chart');
 const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES_TRANSLATION, GENRES_EMOJIS);
@@ -192,16 +208,71 @@ function displayResult(genre) {
   resultOutput.textContent = genre.toUpperCase();
 }
 
+function toMono(audioBuffer) {
+  const channelNum = audioBuffer.numberOfChannels;
+  const len = audioBuffer.length;
+
+  if (channelNum === 1) return audioBuffer.getChannelData(0).slice(0);
+
+  const out = new Float32Array(len);
+  for (let ch = 0; ch < channelNum; ch++) {
+    const data = audioBuffer.getChannelData(ch);
+    for (let i = 0; i < len; i++) out[i] += data[i] / channelNum;
+  }
+  return out;
+}
+
+async function resample(audioBuffer, targetRate) {
+  if (audioBuffer.sampleRate === targetRate) return audioBuffer;
+  const numChannels = audioBuffer.numberOfChannels;
+  const duration = audioBuffer.duration;
+  const offlineCtx = new OfflineAudioContext(numChannels, Math.ceil(duration * targetRate), targetRate);
+  const src = offlineCtx.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(offlineCtx.destination);
+  src.start(0);
+  const rendered = await offlineCtx.startRendering();
+  return rendered;
+}
+
+async function preprocessAudio(audioBuffer) {
+  try {
+    // ресэмплим к fs если надо
+    if (Math.round(audioBuffer.sampleRate) !== Math.round(CONFIG.fs)) {
+      console.log(`Ресемплирование от  ${audioBuffer.sampleRate} к ${CONFIG.fs} Hz`);
+      audioBuffer = await resample(audioBuffer, CONFIG.fs);
+      console.log(`Файл ресемплирован`);
+    }
+
+    // моно и padding/trim до samplesPerTrack
+    let mono = toMono(audioBuffer);
+    /* if (mono.length < samplesPerTrack) {
+        const padded = new Float32Array(samplesPerTrack);
+        padded.set(mono, 0);
+        mono = padded;
+    } else if (mono.length > samplesPerTrack) {
+        mono = mono.subarray(0, samplesPerTrack);
+    } else {
+        log("Паддинг не требуется");
+    } */
+
+    return mono;
+  } catch (err) {
+    console.warn('Ошибка при обработке файла', err);
+    throw (err);
+  }
+}
+
 runAnalysisButton.addEventListener('click', async () => {
   if (!audioFileInput.files.length) {
     alert("Выберите аудиофайл");
     return;
   }
 
-  if (!model) {
-    alert("модель не загружена. ожидайте загрузки");
-    await modelLoad();
-  }
+  // if (!model) {
+  //   alert("модель не загружена. ожидайте загрузки");
+  //   await modelLoad();
+  // }
 
   const chosenFile = audioFileInput.files[0];
 
@@ -218,23 +289,16 @@ runAnalysisButton.addEventListener('click', async () => {
 
   drawWaveplot(audioBuffer);
 
-  const predictionsStream = streamPredictions(audioBuffer, model);
 
-  for await (const message of predictionsStream) {
-    switch (message.type) {
-      case 'start':
-        bubbleChart.updateStepSize(message.total);
-        break;
-      case 'segment':
-        bubbleChart.addBubble(GENRES[message.genreIndex]);
-        break;
-      case 'final':
-        displayResult(GENRES[message.genreIndex]);
-        break;
-    }
-  }
 
-  loader.classList.add('hidden');
+  const processedAudioData = await preprocessAudio(audioBuffer);
+
+  worker.postMessage({
+    type: 'runAnalysis',
+    audioData: processedAudioData
+  }, [processedAudioData.buffer]);
+
+  
 });
 
 backToInputButton.addEventListener('click', () => {

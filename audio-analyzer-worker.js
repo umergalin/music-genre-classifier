@@ -1,5 +1,5 @@
 import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/+esm';
-import { streamPredictions } from './audio-processor.mjs';
+import { streamPredictions } from './audio-analyzer.mjs';
 
 let modelPromise = null;
 

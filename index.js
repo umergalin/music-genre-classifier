@@ -1,6 +1,6 @@
+import { preprocessAudio } from './audio-processor.mjs'
 import { BubbleChart } from './bubble-chart.mjs';
-import { CONFIG } from './audio-processor.mjs';
-import { WavePlotter } from './wave-plotter.mjs'
+import { WavePlotter } from './wave-plotter.mjs';
 console.log("hi");
 
 const MODEL_PATH = '/model/model.json';
@@ -34,8 +34,14 @@ const GENRES_EMOJIS = {
   "rock": "🎸"
 }
 
-const worker = new Worker('audio-processor-worker.js', { type: 'module' });
+const worker = new Worker('audio-analyzer-worker.js', { type: 'module' });
 worker.postMessage({ type: 'loadModel', modelPath: MODEL_PATH });
+
+worker.onerror = function(event) {
+  console.error("Ошибка в воркере:");
+  console.error(`Сообщение: ${event.message}`);
+  console.error(`Файл: ${event.filename}, Строка: ${event.lineno}`);
+};
 
 const waveformContainer = document.querySelector('.js-waveform-container')
 const waveplotter = new WavePlotter(waveformContainer);
@@ -122,61 +128,6 @@ function displayResult(genre) {
   resultOutput.textContent = genre.toUpperCase();
 }
 
-function toMono(audioBuffer) {
-  const channelNum = audioBuffer.numberOfChannels;
-  const len = audioBuffer.length;
-
-  if (channelNum === 1) return audioBuffer.getChannelData(0).slice(0);
-
-  const out = new Float32Array(len);
-  for (let ch = 0; ch < channelNum; ch++) {
-    const data = audioBuffer.getChannelData(ch);
-    for (let i = 0; i < len; i++) out[i] += data[i] / channelNum;
-  }
-  return out;
-}
-
-async function resample(audioBuffer, targetRate) {
-  if (audioBuffer.sampleRate === targetRate) return audioBuffer;
-  const numChannels = audioBuffer.numberOfChannels;
-  const duration = audioBuffer.duration;
-  const offlineCtx = new OfflineAudioContext(numChannels, Math.ceil(duration * targetRate), targetRate);
-  const src = offlineCtx.createBufferSource();
-  src.buffer = audioBuffer;
-  src.connect(offlineCtx.destination);
-  src.start(0);
-  const rendered = await offlineCtx.startRendering();
-  return rendered;
-}
-
-async function preprocessAudio(audioBuffer) {
-  try {
-    // ресэмплим к fs если надо
-    if (Math.round(audioBuffer.sampleRate) !== Math.round(CONFIG.fs)) {
-      console.log(`Ресемплирование от  ${audioBuffer.sampleRate} к ${CONFIG.fs} Hz`);
-      audioBuffer = await resample(audioBuffer, CONFIG.fs);
-      console.log(`Файл ресемплирован`);
-    }
-
-    // моно и padding/trim до samplesPerTrack
-    let mono = toMono(audioBuffer);
-    /* if (mono.length < samplesPerTrack) {
-        const padded = new Float32Array(samplesPerTrack);
-        padded.set(mono, 0);
-        mono = padded;
-    } else if (mono.length > samplesPerTrack) {
-        mono = mono.subarray(0, samplesPerTrack);
-    } else {
-        log("Паддинг не требуется");
-    } */
-
-    return mono;
-  } catch (err) {
-    console.warn('Ошибка при обработке файла', err);
-    throw (err);
-  }
-}
-
 runAnalysisButton.addEventListener('click', async () => {
   if (!audioFileInput.files.length) {
     alert("Выберите аудиофайл");
@@ -210,7 +161,7 @@ runAnalysisButton.addEventListener('click', async () => {
     audioData: processedAudioData
   }, [processedAudioData.buffer]);
 
-  
+
 });
 
 backToInputButton.addEventListener('click', () => {
@@ -219,6 +170,6 @@ backToInputButton.addEventListener('click', () => {
 })
 
 function updateWindowSize() {
-    bubbleChart.resize();
+  bubbleChart.resize();
 }
 window.onresize = updateWindowSize;

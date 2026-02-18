@@ -50,7 +50,8 @@ worker.onmessage = function (e) { // Слушаем сообщения из во
   const message = e.data;
   switch (message.type) {
     case 'start':
-      bubbleChart.updateStepSize(message.total);
+      bubbleChart.updateStepSize(message.segmentCount);
+      console.log(message.segmentCount);
       break;
     case 'segment':
       bubbleChart.addBubble(GENRES[message.genreIndex]);
@@ -74,21 +75,12 @@ const pageResult = document.querySelector('.page-result');
 const contentContainer = document.getElementById('content-container')
 const backToInputButton = document.querySelector('.js-back-trigger');
 
-
 const nameOutput = document.querySelector('.metadata .name');
 const authorOutput = document.querySelector('.metadata .author');
 
 const resultOutput = document.querySelector('.result .genre');
 
 const loader = document.querySelector('.loader');
-
-async function modelLoad() {
-  model = await tf.loadLayersModel(MODEL_PATH);
-  console.log("model loaded");
-
-  const inputShape = model.inputs[0].shape;
-  console.log('Размерность входа:', inputShape);
-}
 
 async function loadAudio(file) {
   const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -134,11 +126,6 @@ runAnalysisButton.addEventListener('click', async () => {
     return;
   }
 
-  // if (!model) {
-  //   alert("модель не загружена. ожидайте загрузки");
-  //   await modelLoad();
-  // }
-
   const chosenFile = audioFileInput.files[0];
 
   displayTrackInfo(chosenFile);
@@ -160,8 +147,6 @@ runAnalysisButton.addEventListener('click', async () => {
     type: 'runAnalysis',
     audioData: processedAudioData
   }, [processedAudioData.buffer]);
-
-
 });
 
 backToInputButton.addEventListener('click', () => {

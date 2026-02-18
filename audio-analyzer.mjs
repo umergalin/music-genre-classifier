@@ -5,19 +5,19 @@ import { CONFIG } from './audio-processor.mjs';
 export async function* streamPredictions(audioData, model) {
   try {
     const samplesPerSegment = CONFIG.fs * CONFIG.segment_duration;
-    const numSegments = Math.floor(audioData.length / samplesPerSegment);
+    const segmentCount = Math.floor(audioData.length / samplesPerSegment);
 
-    yield { type: 'start', total: numSegments };
+    yield { type: 'start', total: segmentCount };
 
     // рассчитываем отступ для размещения окна анализа по середине
-    const totalUsedSamples = numSegments * samplesPerSegment;
+    const totalUsedSamples = segmentCount * samplesPerSegment;
     const leftoverSamples = audioData.length - totalUsedSamples;
     const startOffset = Math.floor(leftoverSamples / 2);
 
     const mfccsPerSegment = Math.ceil(samplesPerSegment / CONFIG.hop_length);
     const predictions = [];
 
-    for (let i = 0; i < numSegments; i++) {
+    for (let i = 0; i < segmentCount; i++) {
       console.log(`получение ${i}-ого сегмента`);
       const segmentStart = startOffset + i * samplesPerSegment;
       const segmentEnd = segmentStart + samplesPerSegment;
@@ -49,7 +49,7 @@ export async function* streamPredictions(audioData, model) {
     const totalMaxIndex = sortedGenres[0];
 
     console.log("\n--- Результаты ---");
-    console.log("Сегментов обработано:", numSegments);
+    console.log("Сегментов обработано:", segmentCount);
     console.log("Предсказанные жанры по сегментам:", predictions.join(', '));
     console.log("Итоговый жанр:", Number(totalMaxIndex));
 

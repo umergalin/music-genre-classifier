@@ -130,8 +130,6 @@ runAnalysisButton.addEventListener('click', async () => {
 
   displayTrackInfo(chosenFile);
 
-  waveplotter.clear();
-
   resultOutput.textContent = `Обработка...`;
   loader.classList.remove('hidden');
 
@@ -139,7 +137,7 @@ runAnalysisButton.addEventListener('click', async () => {
 
   const audioBuffer = await loadAudio(chosenFile);
 
-  waveplotter.drawPlaceholder(audioBuffer);
+  waveplotter.setupCanvas(audioBuffer);
 
   const processedAudioData = await preprocessAudio(audioBuffer);
 

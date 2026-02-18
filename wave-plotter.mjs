@@ -1,7 +1,10 @@
 export class WavePlotter {
   #container;
   #canvas;
-  #segmentsColor;
+  #ctx;
+
+  #rmsHistory = [];
+
   #WAVEFORM_STYLE = {
     color: '#D9D9D9',
     delimiterSize: 3,
@@ -13,86 +16,110 @@ export class WavePlotter {
 
     this.#canvas = document.createElement("canvas");
     container.append(this.#canvas);
+
+    this.#ctx = this.#canvas.getContext('2d');
   }
 
-  drawPlaceholder(audioBuffer) {
+  #recordRMS(audioBuffer, stepSize, stepCount) {
+    const rms = this.#calculateRMS(audioBuffer, stepSize, stepCount);
+    this.#rmsHistory = rms;
+  }
+
+  #calculateRMS(audioBuffer, stepSize, stepCount) {
+    const numChannels = audioBuffer.numberOfChannels;
+    const bufferLength = audioBuffer.length;
+    const rmsValues = [];
+
+    const channels = [];
+    for (let ch = 0; ch < numChannels; ch++) {
+      channels.push(audioBuffer.getChannelData(ch));
+    }
+
+    for (let i = 0; i < stepCount; i++) {
+      const start = i * stepSize;
+      const end = Math.min(start + stepSize, bufferLength);
+
+      let totalSumSquares = 0;
+      let count = 0;
+
+      for (let ch = 0; ch < numChannels; ch++) {
+        const data = channels[ch];
+        for (let j = start; j < end; j++) {
+          const val = data[j];
+          totalSumSquares += val * val;
+          count++;
+        }
+      }
+
+      const rms = count > 0 ? Math.sqrt(totalSumSquares / count) : 0;
+      rmsValues.push(rms);
+    }
+
+    return rmsValues;
+  }
+
+  #drawBackgroundWaveform() {
     const { color, delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
 
     const width = this.#container.clientWidth;
     const height = this.#container.clientHeight;
-    this.#canvas.width = this.#container.clientWidth;
-    this.#canvas.height = this.#container.clientHeight;
-
-    const ctx = this.#canvas.getContext('2d');
-
-    this.resizeCanvas(this.#canvas, ctx);
 
     const start = performance.now();
-    ctx.clearRect(0, 0, width, height);
-
-    const delimiterCount = Math.floor((width + spacingSize) / (delimiterSize + spacingSize)); // сколько вообще делений помещается на график
-
     console.log(`Рисую график на полотне размером ${width}x${height}`);
 
-    const channelData = audioBuffer.getChannelData(0); // берем первый канал
-    const step = Math.ceil(channelData.length / delimiterCount); // количество сэмплов на 1 деление
-    console.log("Шаг: " + step);
     const centerY = height / 2;
 
-    const rmsValues = [];
-    let maxRMS = 0;
-
-    // 1. Один проход для сбора данных
-    for (let i = 0; i < delimiterCount; i++) {
-      const start = i * step;
-      let sumOfSquares = 0;
-      let count = 0;
-
-      for (let j = 0; j < step && (start + j) < channelData.length; j++) {
-        const val = channelData[start + j];
-        sumOfSquares += val * val;
-        count++;
-      }
-
-      const rms = Math.sqrt(sumOfSquares / count);
-      if (rms > maxRMS) maxRMS = rms;
-      rmsValues.push(rms); // Сохраняем, чтобы не считать заново
-    }
-
+    const maxRMS = this.#rmsHistory.reduce((max, val) => val > max ? val : max);
     const scaleFactor = maxRMS > 0 ? 1 / maxRMS : 1;
 
     const minDelimiterHeight = 1;
-    ctx.lineWidth = delimiterSize;
-    ctx.strokeStyle = color;
-    ctx.beginPath();
+    this.#ctx.lineWidth = delimiterSize;
+    this.#ctx.strokeStyle = color;
+    this.#ctx.beginPath();
 
-    for (let i = 0; i < rmsValues.length; i++) {
-      const normalizedHeight = rmsValues[i] * scaleFactor;
+    for (let i = 0; i < this.#rmsHistory.length; i++) {
+      const normalizedHeight = this.#rmsHistory[i] * scaleFactor;
       const x = i * (delimiterSize + spacingSize) + delimiterSize / 2;
-      let height = normalizedHeight * centerY;
+      let barHeight = normalizedHeight * centerY;
 
-      if (height < minDelimiterHeight) height = minDelimiterHeight;
+      if (barHeight < minDelimiterHeight) barHeight = minDelimiterHeight;
 
-      // Рисуем линию
-      ctx.moveTo(x, centerY - height);
-      ctx.lineTo(x, centerY + height);
+      this.#ctx.moveTo(x, centerY - barHeight);
+      this.#ctx.lineTo(x, centerY + barHeight);
     }
 
-    ctx.stroke();
+    this.#ctx.stroke();
 
     const end = performance.now();
     console.log(`График нарисован за ${(end - start).toFixed(3)} мс`);
   }
 
-  markSegment(segmentNum, color) {
+  setupCanvas(audioBuffer) {
+    this.#updateSize();
+    this.#clearCanvas();
 
+    const { color, delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
+
+    const width = this.#container.clientWidth;
+
+    const stepCount = Math.floor((width + spacingSize) / (delimiterSize + spacingSize)); // сколько вообще делений помещается на график
+    const totalSamples = audioBuffer.length;
+    const stepSize = Math.ceil(totalSamples / stepCount); // количество сэмплов на 1 деление
+    console.log("Шаг: " + stepSize);
+
+    this.#recordRMS(audioBuffer, stepSize, stepCount);
+
+    this.#drawBackgroundWaveform();
   }
 
-  clear() {
-    this.#canvas.getContext('2d').clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+  #clearCanvas() {
+    this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
   }
 
-  resizeCanvas() {
+  #updateSize() {
+    this.#canvas.width = this.#container.clientWidth;
+    this.#canvas.height = this.#container.clientHeight;
+
     const dpr = window.devicePixelRatio || 1;
     const { clientWidth, clientHeight } = this.#canvas;
 
@@ -103,7 +130,7 @@ export class WavePlotter {
       this.#canvas.width = width;
       this.#canvas.height = height;
 
-      this.#canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.#ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
   }
 }

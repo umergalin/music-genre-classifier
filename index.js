@@ -137,7 +137,7 @@ runAnalysisButton.addEventListener('click', async () => {
 
   const audioBuffer = await loadAudio(chosenFile);
 
-  waveplotter.setupCanvas(audioBuffer);
+  waveplotter.render(audioBuffer);
 
   const processedAudioData = await preprocessAudio(audioBuffer);
 

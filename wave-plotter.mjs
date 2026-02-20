@@ -3,6 +3,8 @@ export class WavePlotter {
   #canvas;
   #ctx;
 
+  #currentAudioBuffer = null;
+
   #rmsHistory = [];
   #scaleFactor = 1;
 
@@ -63,10 +65,14 @@ export class WavePlotter {
   }
 
   #drawBackgroundWaveform() {
-    const { color, delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
+    this.#drawRMS(0, this.#rmsHistory.length, this.#WAVEFORM_STYLE.color);
+  }
+
+  #drawRMS(fromIndex, toIndex, color) {
+    const { delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
 
     const width = this.#container.clientWidth;
-    const height = this.#container.clientHeight;
+    const height = this.#canvas.height / (window.devicePixelRatio || 1);
     const centerY = height / 2;
 
     const start = performance.now();
@@ -76,10 +82,10 @@ export class WavePlotter {
     this.#ctx.strokeStyle = color;
     this.#ctx.beginPath();
 
-    for (let i = 0; i < this.#rmsHistory.length; i++) {
+    for (let i = fromIndex; i < toIndex; i++) {
       const normalizedHeight = this.#rmsHistory[i] * this.#scaleFactor;
       const x = i * (delimiterSize + spacingSize) + delimiterSize / 2;
-      
+
       let barHeight = Math.max(normalizedHeight * centerY, 1);
 
       this.#ctx.moveTo(x, centerY - barHeight);
@@ -92,7 +98,10 @@ export class WavePlotter {
     console.log(`График нарисован за ${(end - start).toFixed(3)} мс`);
   }
 
-  setupCanvas(audioBuffer) {
+  render(audioBuffer = this.#currentAudioBuffer) {
+    if (!audioBuffer) return;
+    this.#currentAudioBuffer = audioBuffer;
+
     this.#updateSize();
     this.#clearCanvas();
 

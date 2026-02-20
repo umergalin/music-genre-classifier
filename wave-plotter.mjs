@@ -4,6 +4,7 @@ export class WavePlotter {
   #ctx;
 
   #rmsHistory = [];
+  #scaleFactor = 1;
 
   #WAVEFORM_STYLE = {
     color: '#D9D9D9',
@@ -23,6 +24,9 @@ export class WavePlotter {
   #recordRMS(audioBuffer, stepSize, stepCount) {
     const rms = this.#calculateRMS(audioBuffer, stepSize, stepCount);
     this.#rmsHistory = rms;
+
+    const maxRMS = rms.reduce((max, val) => val > max ? val : max);
+    this.#scaleFactor = maxRMS > 0 ? 1 / maxRMS : 1;
   }
 
   #calculateRMS(audioBuffer, stepSize, stepCount) {
@@ -63,26 +67,20 @@ export class WavePlotter {
 
     const width = this.#container.clientWidth;
     const height = this.#container.clientHeight;
+    const centerY = height / 2;
 
     const start = performance.now();
     console.log(`Рисую график на полотне размером ${width}x${height}`);
 
-    const centerY = height / 2;
-
-    const maxRMS = this.#rmsHistory.reduce((max, val) => val > max ? val : max);
-    const scaleFactor = maxRMS > 0 ? 1 / maxRMS : 1;
-
-    const minDelimiterHeight = 1;
     this.#ctx.lineWidth = delimiterSize;
     this.#ctx.strokeStyle = color;
     this.#ctx.beginPath();
 
     for (let i = 0; i < this.#rmsHistory.length; i++) {
-      const normalizedHeight = this.#rmsHistory[i] * scaleFactor;
+      const normalizedHeight = this.#rmsHistory[i] * this.#scaleFactor;
       const x = i * (delimiterSize + spacingSize) + delimiterSize / 2;
-      let barHeight = normalizedHeight * centerY;
-
-      if (barHeight < minDelimiterHeight) barHeight = minDelimiterHeight;
+      
+      let barHeight = Math.max(normalizedHeight * centerY, 1);
 
       this.#ctx.moveTo(x, centerY - barHeight);
       this.#ctx.lineTo(x, centerY + barHeight);
@@ -98,14 +96,14 @@ export class WavePlotter {
     this.#updateSize();
     this.#clearCanvas();
 
-    const { color, delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
+    const { delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
 
     const width = this.#container.clientWidth;
 
     const stepCount = Math.floor((width + spacingSize) / (delimiterSize + spacingSize)); // сколько вообще делений помещается на график
     const totalSamples = audioBuffer.length;
     const stepSize = Math.ceil(totalSamples / stepCount); // количество сэмплов на 1 деление
-    console.log("Шаг: " + stepSize);
+    console.log("Размер шага: " + stepSize);
 
     this.#recordRMS(audioBuffer, stepSize, stepCount);
 

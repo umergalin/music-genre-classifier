@@ -13,6 +13,8 @@ export class WavePlotter {
   #rmsHistory = [];
   #scaleFactor = 1;
 
+  #segments = [];
+
   #WAVEFORM_STYLE = {
     color: '#D9D9D9',
     delimiterSize: 3,
@@ -93,18 +95,22 @@ export class WavePlotter {
     return rmsValues;
   }
 
-  #drawBackgroundWaveform() {
-    this.#drawRMS(0, this.#rmsHistory.length, this.#WAVEFORM_STYLE.color);
+  #drawWaveform() {
+    if (this.#segments.length === 0) {
+      this.#drawRMS(0, this.#rmsHistory.length, this.#WAVEFORM_STYLE.color);
+      return;
+    }
+
+    for (const segment of this.#segments) {
+      this.#drawRMS(segment.start, segment.end, segment.color);
+    }
   }
 
-  #drawRMS(fromIndex, toIndex, color) {
+  #drawRMS(fromIndex, toIndex, color = this.#WAVEFORM_STYLE.color) {
     const { delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
 
-    const width = this.#container.clientWidth;
     const height = this.#canvas.height / (window.devicePixelRatio || 1);
     const centerY = height / 2;
-
-    const start = performance.now();
 
     this.#ctx.lineWidth = delimiterSize;
     this.#ctx.strokeStyle = color;
@@ -121,9 +127,6 @@ export class WavePlotter {
     }
 
     this.#ctx.stroke();
-
-    const end = performance.now();
-    console.log(`График нарисован за ${(end - start).toFixed(3)} мс`);
   }
 
   render(audioBuffer) {
@@ -135,23 +138,31 @@ export class WavePlotter {
     }
 
     if(!this.#channels) return;
-    
-    this.#updateSize();
-    this.#clearCanvas();
 
     const { delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
     const width = this.#container.clientWidth;
-
     const stepCount = Math.floor((width + spacingSize) / (delimiterSize + spacingSize)); // сколько вообще делений помещается на график
-    const totalSamples = this.#channels[0].length;
-    const stepSize = Math.ceil(totalSamples / stepCount); // количество сэмплов на 1 деление
 
-    this.#recordRMS(stepSize, stepCount);
-    this.#drawBackgroundWaveform();
+    if (stepCount !== this.#rmsHistory.length) {
+      const totalSamples = this.#channels[0].length;
+      const stepSize = Math.ceil(totalSamples / stepCount);
+
+      this.#updateSize();
+      this.#recordRMS(stepSize, stepCount);
+    } else {
+      this.#clearCanvas();
+    }
+
+    this.#drawWaveform();
   }
 
   #clearCanvas() {
     this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+  }
+
+  reset() {
+    this.#segments = [];
+    this.#clearCanvas();
   }
 
   #updateSize() {
@@ -169,6 +180,41 @@ export class WavePlotter {
       this.#canvas.height = height;
 
       this.#ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+  }
+
+  setSegmentsCount(count) {
+    const oldCount = this.#segments.length;
+
+    this.#segments = Array.from(Array(count), () => ({
+      start: 0,
+      end: 0,
+      color: this.#WAVEFORM_STYLE.color
+    }));
+
+    if (oldCount !== count) this.#calculateSegments();
+  }
+
+  #calculateSegments() {
+    const barsCount = this.#rmsHistory.length;
+    const segmentCount = this.#segments.length;
+
+    if (segmentCount === 0) return [];
+
+    const step = barsCount / segmentCount;
+    let currentPos = 0;
+
+    this.#segments.forEach((segment, i) => {
+      segment.start = Math.round(currentPos);
+      currentPos += step;
+      segment.end = (i === segmentCount - 1) ? barsCount : Math.round(currentPos);
+    })
+  }
+
+  setSegmentColor(index, color) {
+    if (this.#segments[index]) {
+      this.#segments[index].color = color;
+      this.#drawWaveform();
     }
   }
 }

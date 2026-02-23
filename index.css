@@ -1,5 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
+:root {
+  --rock-bg: #FE4E41;
+  --rock-fg: black;
+  --blues-bg: #DACDFF;
+  --blues-fg: black;
+  --classical-bg: #ECECEC;
+  --classical-fg: black;
+  --country-bg: #80B9F1;
+  --country-fg: black;
+  --disco-bg: #F39191;
+  --disco-fg: black;
+  --hiphop-bg: #FFD24D;
+  --hiphop-fg: black;
+  --jazz-bg: #4BE59A;
+  --jazz-fg: black;
+  --metal-bg: #B1E8EA;
+  --metal-fg: black;
+  --pop-bg: #B99CF4;
+  --pop-fg: black;
+  --reggae-bg: #F2AC89;
+  --reggae-fg: black;
+}
+
 * {
   margin: 0;
   padding: 0;

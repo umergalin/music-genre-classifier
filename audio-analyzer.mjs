@@ -7,7 +7,7 @@ export async function* streamPredictions(audioData, model) {
     const samplesPerSegment = CONFIG.fs * CONFIG.segment_duration;
     const segmentCount = Math.floor(audioData.length / samplesPerSegment);
 
-    yield { type: 'start', total: segmentCount };
+    yield { type: 'start', segmentCount: segmentCount };
 
     // рассчитываем отступ для размещения окна анализа по середине
     const totalUsedSamples = segmentCount * samplesPerSegment;
@@ -38,7 +38,7 @@ export async function* streamPredictions(audioData, model) {
       prediction.dispose();
 
       predictions.push(maxIndex);
-      yield { type: 'segment', genreIndex: maxIndex };
+      yield { type: 'segment', genreIndex: maxIndex, segmentIndex: i };
     }
 
     // Подсчет самого частого жанра

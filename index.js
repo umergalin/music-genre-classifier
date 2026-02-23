@@ -46,15 +46,23 @@ worker.onerror = function(event) {
 const waveformContainer = document.querySelector('.js-waveform-container')
 const waveplotter = new WavePlotter(waveformContainer);
 
+const getCSSVar = (varName) => {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
+};
+
 worker.onmessage = function (e) { // Слушаем сообщения из воркера
   const message = e.data;
   switch (message.type) {
     case 'start':
       bubbleChart.updateStepSize(message.segmentCount);
-      console.log(message.segmentCount);
+      waveplotter.setSegmentsCount(message.segmentCount);
       break;
     case 'segment':
-      bubbleChart.addBubble(GENRES[message.genreIndex]);
+      const genre = GENRES[message.genreIndex];
+      waveplotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
+      bubbleChart.addBubble(genre);  
       break;
     case 'final':
       displayResult(GENRES[message.genreIndex]);

@@ -44,7 +44,7 @@ worker.onerror = function(event) {
 };
 
 const waveformContainer = document.querySelector('.js-waveform-container')
-const waveplotter = new WavePlotter(waveformContainer);
+const wavePlotter = new WavePlotter(waveformContainer);
 
 const getCSSVar = (varName) => {
   return getComputedStyle(document.documentElement)
@@ -57,11 +57,11 @@ worker.onmessage = function (e) { // Слушаем сообщения из во
   switch (message.type) {
     case 'start':
       bubbleChart.updateStepSize(message.segmentCount);
-      waveplotter.setSegmentsCount(message.segmentCount);
+      wavePlotter.setSegmentsCount(message.segmentCount);
       break;
     case 'segment':
       const genre = GENRES[message.genreIndex];
-      waveplotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
+      wavePlotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
       bubbleChart.addBubble(genre);  
       break;
     case 'final':
@@ -145,7 +145,7 @@ runAnalysisButton.addEventListener('click', async () => {
 
   const audioBuffer = await loadAudio(chosenFile);
 
-  waveplotter.render(audioBuffer);
+  wavePlotter.render(audioBuffer);
 
   const processedAudioData = await preprocessAudio(audioBuffer);
 
@@ -157,8 +157,13 @@ runAnalysisButton.addEventListener('click', async () => {
 
 backToInputButton.addEventListener('click', () => {
   contentContainer.classList.remove('show-result');
-  bubbleChart.reset(); // лучше сбрасывать только тогда, когда страница уже уедет за экран
+  clearResults();
 })
+
+function clearResults() { // лучше сбрасывать только тогда, когда страница уже уедет за экран
+  wavePlotter.reset();
+  bubbleChart.reset(); 
+}
 
 function updateWindowSize() {
   bubbleChart.resize();

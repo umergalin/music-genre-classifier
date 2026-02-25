@@ -34,6 +34,12 @@ const GENRES_EMOJIS = {
   "rock": "🎸"
 }
 
+const UI_DEFAULTS = {
+  AUTHOR: 'Неизвестен',
+  NAME: 'Неизвестно',
+  STATUS: 'Обработка...'
+};
+
 const worker = new Worker('audio-analyzer-worker.js', { type: 'module' });
 worker.postMessage({ type: 'loadModel', modelPath: MODEL_PATH });
 
@@ -106,9 +112,6 @@ async function loadAudio(file) {
 }
 
 function displayTrackInfo(file) {
-  authorOutput.textContent = 'Неизвестен';
-  nameOutput.textContent = 'Неизвестно';
-
   const fileName = file.name;
 
   const lastDotIndex = fileName.lastIndexOf('.');
@@ -133,12 +136,14 @@ runAnalysisButton.addEventListener('click', async () => {
     alert("Выберите аудиофайл");
     return;
   }
+  
 
   const chosenFile = audioFileInput.files[0];
 
-  displayTrackInfo(chosenFile);
+  clearResults();
 
-  resultOutput.textContent = `Обработка...`;
+  displayTrackInfo(chosenFile);
+  
   loader.classList.remove('hidden');
 
   contentContainer.classList.add("show-result");
@@ -161,8 +166,12 @@ backToInputButton.addEventListener('click', () => {
 })
 
 function clearResults() { // лучше сбрасывать только тогда, когда страница уже уедет за экран
+  authorOutput.textContent = UI_DEFAULTS.AUTHOR;
+  nameOutput.textContent = UI_DEFAULTS.NAME;
+  resultOutput.textContent = UI_DEFAULTS.STATUS;
+
   wavePlotter.reset();
-  bubbleChart.reset(); 
+  bubbleChart.reset();
 }
 
 function updateWindowSize() {

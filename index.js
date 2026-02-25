@@ -34,6 +34,12 @@ const GENRES_EMOJIS = {
   "rock": "🎸"
 }
 
+const UI_DEFAULTS = {
+  AUTHOR: 'Неизвестен',
+  NAME: 'Неизвестно',
+  STATUS: 'Обработка...'
+};
+
 const worker = new Worker('audio-analyzer-worker.js', { type: 'module' });
 worker.postMessage({ type: 'loadModel', modelPath: MODEL_PATH });
 
@@ -44,7 +50,7 @@ worker.onerror = function(event) {
 };
 
 const waveformContainer = document.querySelector('.js-waveform-container')
-const waveplotter = new WavePlotter(waveformContainer);
+const wavePlotter = new WavePlotter(waveformContainer);
 
 const getCSSVar = (varName) => {
   return getComputedStyle(document.documentElement)
@@ -57,11 +63,11 @@ worker.onmessage = function (e) { // Слушаем сообщения из во
   switch (message.type) {
     case 'start':
       bubbleChart.updateStepSize(message.segmentCount);
-      waveplotter.setSegmentsCount(message.segmentCount);
+      wavePlotter.setSegmentsCount(message.segmentCount);
       break;
     case 'segment':
       const genre = GENRES[message.genreIndex];
-      waveplotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
+      wavePlotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
       bubbleChart.addBubble(genre);  
       break;
     case 'final':
@@ -106,9 +112,6 @@ async function loadAudio(file) {
 }
 
 function displayTrackInfo(file) {
-  authorOutput.textContent = 'Неизвестен';
-  nameOutput.textContent = 'Неизвестно';
-
   const fileName = file.name;
 
   const lastDotIndex = fileName.lastIndexOf('.');
@@ -133,19 +136,20 @@ runAnalysisButton.addEventListener('click', async () => {
     alert("Выберите аудиофайл");
     return;
   }
+  
 
   const chosenFile = audioFileInput.files[0];
 
-  displayTrackInfo(chosenFile);
+  clearResults();
+  prepareForProcessing();
 
-  resultOutput.textContent = `Обработка...`;
-  loader.classList.remove('hidden');
+  displayTrackInfo(chosenFile);
 
   contentContainer.classList.add("show-result");
 
   const audioBuffer = await loadAudio(chosenFile);
 
-  waveplotter.render(audioBuffer);
+  wavePlotter.render(audioBuffer);
 
   const processedAudioData = await preprocessAudio(audioBuffer);
 
@@ -157,8 +161,25 @@ runAnalysisButton.addEventListener('click', async () => {
 
 backToInputButton.addEventListener('click', () => {
   contentContainer.classList.remove('show-result');
-  bubbleChart.reset(); // лучше сбрасывать только тогда, когда страница уже уедет за экран
+  clearResults();
 })
+
+function clearResults() { // лучше сбрасывать только тогда, когда страница уже уедет за экран
+  authorOutput.textContent = '';
+  nameOutput.textContent = '';
+  resultOutput.textContent = '';
+
+  wavePlotter.reset();
+  bubbleChart.reset();
+}
+
+function prepareForProcessing() {
+  authorOutput.textContent = UI_DEFAULTS.AUTHOR;
+  nameOutput.textContent = UI_DEFAULTS.NAME;
+  resultOutput.textContent = UI_DEFAULTS.STATUS;
+
+  loader.classList.remove('hidden');
+}
 
 function updateWindowSize() {
   bubbleChart.resize();

@@ -141,10 +141,9 @@ runAnalysisButton.addEventListener('click', async () => {
   const chosenFile = audioFileInput.files[0];
 
   clearResults();
+  prepareForProcessing();
 
   displayTrackInfo(chosenFile);
-  
-  loader.classList.remove('hidden');
 
   contentContainer.classList.add("show-result");
 
@@ -166,12 +165,20 @@ backToInputButton.addEventListener('click', () => {
 })
 
 function clearResults() { // лучше сбрасывать только тогда, когда страница уже уедет за экран
+  authorOutput.textContent = '';
+  nameOutput.textContent = '';
+  resultOutput.textContent = '';
+
+  wavePlotter.reset();
+  bubbleChart.reset();
+}
+
+function prepareForProcessing() {
   authorOutput.textContent = UI_DEFAULTS.AUTHOR;
   nameOutput.textContent = UI_DEFAULTS.NAME;
   resultOutput.textContent = UI_DEFAULTS.STATUS;
 
-  wavePlotter.reset();
-  bubbleChart.reset();
+  loader.classList.remove('hidden');
 }
 
 function updateWindowSize() {

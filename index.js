@@ -164,6 +164,10 @@ runAnalysisButton.addEventListener('click', async () => {
 
 backToInputButton.addEventListener('click', () => {
   contentContainer.classList.remove('show-result');
+
+  audioFileInput.value = '';
+  runAnalysisButton.disabled = true;
+
   clearResults();
 })
 

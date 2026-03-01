@@ -20,13 +20,15 @@
             <h1 class="site-name">Определитель жанра</h1>
           </header>
 
-          <div class="input-container">
-            <input id="audio-file-input" type="file" accept="audio/*" class="visually-hidden" />
-            <label for="audio-file-input" class="file-label">
-              <span>Выберите или перетащите аудиофайл</span>
-            </label>
+          <div class="file-upload">
+            <div class="file-upload__drag-area">
+              <input id="audio-file-input" type="file" accept="audio/*" class="visually-hidden" />
+              <label for="audio-file-input" class="file-label">
+                <span>Выберите или перетащите аудиофайл</span>
+              </label>
+            </div>
           </div>
-
+          
           <button class="btn btn--run js-run-analysis" disabled>Начать анализ</button>
         </div>
       </section>

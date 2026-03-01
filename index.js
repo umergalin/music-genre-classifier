@@ -131,13 +131,16 @@ function displayResult(genre) {
   resultOutput.textContent = genre.toUpperCase();
 }
 
+audioFileInput.addEventListener('change', () => {
+  runAnalysisButton.disabled = audioFileInput.files.length === 0;
+}) 
+
 runAnalysisButton.addEventListener('click', async () => {
   if (!audioFileInput.files.length) {
     alert("Выберите аудиофайл");
     return;
   }
   
-
   const chosenFile = audioFileInput.files[0];
 
   clearResults();

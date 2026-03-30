@@ -3,7 +3,7 @@ import { BubbleChart } from './bubble-chart.mjs';
 import { WavePlotter } from './wave-plotter.mjs';
 console.log("hi");
 
-const MODEL_PATH = 'model/model.json';
+const MODEL_PATH = './model/model.json';
 
 //const GENRES = ['Блюз', 'Классическая', 'Кантри', 'Диско', 'Хип-хоп', 'Джаз', 'Метал', 'Поп', 'Регги', 'Рок'];
 const GENRES = ["blues", "classical", "country", "disco", "hiphop", "jazz", "metal", "pop", "reggae", "rock"];

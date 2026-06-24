@@ -132,7 +132,28 @@ function displayResult(genre) {
 }
 
 audioFileInput.addEventListener('change', () => {
-  runAnalysisButton.disabled = audioFileInput.files.length === 0;
+  const file = audioFileInput.files[0];
+
+  if (!file) {
+    runAnalysisButton.disabled = true;
+    return;
+  }
+
+  const audio = new Audio();
+  const objectUrl = URL.createObjectURL(file);
+  audio.src = objectUrl;
+
+  audio.onloadedmetadata = function () {
+    URL.revokeObjectURL(objectUrl);
+
+    if (audio.duration < 3) {
+      console.log("Файл слишком короткий (минимум 3 секунды)");
+      audioFileInput.value = "";
+      runAnalysisButton.disabled = true;
+    } else {
+      runAnalysisButton.disabled = false;
+    }
+  };
 }) 
 
 runAnalysisButton.addEventListener('click', async () => {

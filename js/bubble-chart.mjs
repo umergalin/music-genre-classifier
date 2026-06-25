@@ -1,3 +1,5 @@
+import { getCSSVar } from "./utils.js";
+
 export class BubbleChart {
     #gravity = 0.01;
     #friction = 0.95;
@@ -86,7 +88,9 @@ export class BubbleChart {
 
         const bubble = document.createElement("div");
         bubble.classList.add("bubble");
-        bubble.classList.add(genre.id);
+
+        bubble.style.backgroundColor = getCSSVar(`--${genre.id}-bg`);
+
         bubble.textContent = genre.emoji;
         console.log(`вставляю эмодзи ${genre.emoji} который соотвествует жанру ${genre.id}`);
         bubble.title = genre.label;

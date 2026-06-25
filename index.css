@@ -1,25 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
-  --rock-bg: #FE4E41;
+  --rock-bg: #B99CF4;
   --rock-fg: black;
   --blues-bg: #DACDFF;
   --blues-fg: black;
-  --classical-bg: #ECECEC;
+  --classical-bg: #7E85FF;
   --classical-fg: black;
-  --country-bg: #80B9F1;
+  --country-bg: #FE4E41;
   --country-fg: black;
-  --disco-bg: #F39191;
+  --disco-bg: #B1E8EA;
   --disco-fg: black;
   --hiphop-bg: #FFD24D;
   --hiphop-fg: black;
-  --jazz-bg: #4BE59A;
+  --jazz-bg: #F2AC89;
   --jazz-fg: black;
-  --metal-bg: #B1E8EA;
+  --metal-bg: #F39191;
   --metal-fg: black;
-  --pop-bg: #B99CF4;
+  --pop-bg: #4BE59A;
   --pop-fg: black;
-  --reggae-bg: #F2AC89;
+  --reggae-bg: #80B9F1;
   --reggae-fg: black;
 }
 
@@ -273,54 +273,4 @@
   -ms-user-select: none;
   user-select: none;
   cursor: grab;
-}
-
-.rock {
-  background-color: #FE4E41;
-  color: black;
-}
-
-.blues {
-  background-color: #DACDFF;
-  color: black;
-}
-
-.classical {
-  background-color: #ECECEC;
-  color: black;
-}
-
-.country {
-  background-color: #80B9F1;
-  color: black;
-}
-
-.disco {
-  background-color: #F39191;
-  color: black;
-}
-
-.hiphop {
-  background-color: #FFD24D;
-  color: black;
-}
-
-.jazz {
-  background-color: #4BE59A;
-  color: black;
-}
-
-.metal {
-  background-color: #B1E8EA;
-  color: black;
-}
-
-.pop {
-  background-color: #B99CF4;
-  color: black;
-}
-
-.reggae {
-  background-color: #F2AC89;
-  color: black;
 }

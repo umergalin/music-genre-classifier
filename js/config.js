@@ -3,7 +3,18 @@ export const PATHS = {
     model: '../model/model.json'
 }
 
-export const GENRES = ["blues", "classical", "country", "disco", "hiphop", "jazz", "metal", "pop", "reggae", "rock"];
+export const GENRES = [
+  { id: "blues", label: "блюз", emoji: "🎺" },
+  { id: "classical", label: "классическая", emoji: "🎹" },
+  { id: "country", label: "кантри", emoji: "🤠" },
+  { id: "disco", label: "диско", emoji: "💿" },
+  { id: "hiphop", label: "хип-хоп", emoji: "🎛️" },
+  { id: "jazz", label: "джаз", emoji: "🎷" },
+  { id: "metal", label: "метал", emoji: "💀" },
+  { id: "pop", label: "поп", emoji: "🎤" },
+  { id: "reggae", label: "регги", emoji: "☮️" },
+  { id: "rock", label: "рок", emoji: "🎸" },
+];
 
 export const GENRES_TRANSLATION = {
   "blues": "блюз",

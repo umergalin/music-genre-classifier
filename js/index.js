@@ -4,7 +4,7 @@ import { WavePlotter } from './wave-plotter.mjs';
 console.log("hi");
 
 
-import { PATHS, GENRES, GENRES_EMOJIS, GENRES_TRANSLATION, UI_DEFAULTS } from './config.js';
+import { PATHS, GENRES, UI_DEFAULTS } from './config.js';
 
 
 const worker = new Worker(PATHS.worker, { type: 'module' });
@@ -25,27 +25,28 @@ const getCSSVar = (varName) => {
     .trim();
 };
 
-worker.onmessage = function (e) { // Слушаем сообщения из воркера
+worker.onmessage = function (e) {
+  // Слушаем сообщения из воркера
   const message = e.data;
   switch (message.type) {
-    case 'start':
+    case "start":
       bubbleChart.updateStepSize(message.segmentCount);
       wavePlotter.setSegmentsCount(message.segmentCount);
       break;
-    case 'segment':
+    case "segment":
       const genre = GENRES[message.genreIndex];
       wavePlotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
-      bubbleChart.addBubble(genre);  
+      bubbleChart.addBubble(message.genreIndex);
       break;
-    case 'final':
-      displayResult(GENRES[message.genreIndex]);
-      loader.classList.add('hidden');
+    case "final":
+      displayResult(GENRES[message.genreIndex].id);
+      loader.classList.add("hidden");
       break;
   }
-}
+};
 
 const bubbleChartContainer = document.querySelector('.bubble-chart');
-const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES_TRANSLATION, GENRES_EMOJIS);
+const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES);
 
 const audioFileInput = document.getElementById('audio-file-input');
 const runAnalysisButton = document.querySelector('.js-run-analysis');

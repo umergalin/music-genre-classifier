@@ -10,13 +10,12 @@ export class BubbleChart {
     #previousTime;
     #stepFontSize;
     #maxPointGenre;
-    #genresEmojis
-    #genresTranslation
+    #genres
 
     #MIN_FONT_SIZE = 22; // const
     #MAX_FONT_SIZE = 80; // const
 
-    constructor(container, genresTranslation, genresEmojis) {
+    constructor(container, genres) {
         this.#container = container;
         // this.#labels = [...labels];
         this.#bubbles = [];
@@ -32,8 +31,7 @@ export class BubbleChart {
         this.#center.classList.add("chart-center");
         container.append(this.#center);
 
-        this.#genresEmojis = genresEmojis;
-        this.#genresTranslation = genresTranslation;
+        this.#genres = genres;
 
         this.resize();
 
@@ -63,11 +61,13 @@ export class BubbleChart {
         console.log("step size: " + this.#stepFontSize);
     }
 
-    addBubble(genre) {
+    addBubble(genreIndex) {
+        const genre = this.#genres[genreIndex];
+
         console.log(`center x: ${this.#center.offsetLeft}, y: ${this.#center.offsetTop}`);
-        if (this.#labelToBubble.has(genre)) {
+        if (this.#labelToBubble.has(genre.id)) {
             // update bubble
-            const bubbleObj = this.#labelToBubble.get(genre);
+            const bubbleObj = this.#labelToBubble.get(genre.id);
 
             bubbleObj.fontSize += this.#stepFontSize;
             bubbleObj.element.style.fontSize = `${Math.round(bubbleObj.fontSize)}px`;
@@ -86,10 +86,10 @@ export class BubbleChart {
 
         const bubble = document.createElement("div");
         bubble.classList.add("bubble");
-        bubble.classList.add(genre);
-        bubble.textContent = this.#genresEmojis[genre];
-        console.log(`вставляю эмодзи ${this.#genresEmojis[genre]} который соотвествует жанру ${genre}`);
-        bubble.title = this.#genresTranslation[genre];
+        bubble.classList.add(genre.id);
+        bubble.textContent = genre.emoji;
+        console.log(`вставляю эмодзи ${genre.emoji} который соотвествует жанру ${genre.id}`);
+        bubble.title = genre.label;
 
         bubble.style.left = `${x}px`;
         bubble.style.top = `${y}px`;
@@ -112,12 +112,12 @@ export class BubbleChart {
         };
 
         if (bubbleObj.fontSize > this.#maxPointGenre.points) {
-            this.#maxPointGenre.genre = genre;
+            this.#maxPointGenre.genre = genre.id;
             this.#maxPointGenre.points = bubbleObj.fontSize;
         }
 
         this.#bubbles.push(bubbleObj);
-        this.#labelToBubble.set(genre, bubbleObj);
+        this.#labelToBubble.set(genre.id, bubbleObj);
     }
 
     resize() {

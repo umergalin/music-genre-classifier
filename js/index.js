@@ -32,7 +32,7 @@ worker.onmessage = function (e) {
       break;
     case "segment":
       const genre = GENRES[message.genreIndex];
-      wavePlotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre}-bg`));
+      wavePlotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre.id}-bg`));
       bubbleChart.addBubble(message.genreIndex);
       break;
     case "final":

@@ -3,45 +3,12 @@ import { BubbleChart } from './bubble-chart.mjs';
 import { WavePlotter } from './wave-plotter.mjs';
 console.log("hi");
 
-const MODEL_PATH = '/model/model.json';
 
-//const GENRES = ['Блюз', 'Классическая', 'Кантри', 'Диско', 'Хип-хоп', 'Джаз', 'Метал', 'Поп', 'Регги', 'Рок'];
-const GENRES = ["blues", "classical", "country", "disco", "hiphop", "jazz", "metal", "pop", "reggae", "rock"];
+import { PATHS, GENRES, GENRES_EMOJIS, GENRES_TRANSLATION, UI_DEFAULTS } from './config.js';
 
-const GENRES_TRANSLATION = {
-  "blues": "блюз",
-  "classical": "классическая",
-  "country": "кантри",
-  "disco": "диско",
-  "hiphop": "хип-хоп",
-  "jazz": "джаз",
-  "metal": "метал",
-  "pop": "поп",
-  "reggae": "регги",
-  "rock": "рок"
-}
 
-const GENRES_EMOJIS = {
-  "blues": "🎺",
-  "classical": "🎹",
-  "country": "🤠",
-  "disco": "💿",
-  "hiphop": "🎛️",
-  "jazz": "🎷",
-  "metal": "💀",
-  "pop": "🎤",
-  "reggae": "☮️",
-  "rock": "🎸"
-}
-
-const UI_DEFAULTS = {
-  AUTHOR: 'Неизвестен',
-  NAME: 'Неизвестно',
-  STATUS: 'Обработка...'
-};
-
-const worker = new Worker('/js/audio-analyzer-worker.js', { type: 'module' });
-worker.postMessage({ type: 'loadModel', modelPath: MODEL_PATH });
+const worker = new Worker(PATHS.worker, { type: 'module' });
+worker.postMessage({ type: 'loadModel', modelPath: PATHS.model });
 
 worker.onerror = function(event) {
   console.error("Ошибка в воркере:");

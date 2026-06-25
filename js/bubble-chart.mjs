@@ -75,7 +75,7 @@ export class BubbleChart {
             bubbleObj.element.style.fontSize = `${Math.round(bubbleObj.fontSize)}px`;
 
             if (bubbleObj.fontSize > this.#maxPointGenre.points) {
-                this.#maxPointGenre.genre = genre;
+                this.#maxPointGenre.genre = genre.id;
                 this.#maxPointGenre.points = bubbleObj.fontSize;
             }
 

@@ -3,6 +3,7 @@ import { BubbleChart } from './bubble-chart.mjs';
 import { WavePlotter } from './wave-plotter.mjs';
 console.log("hi");
 
+import { getCSSVar } from './utils.js';
 
 import { PATHS, GENRES, UI_DEFAULTS } from './config.js';
 
@@ -19,11 +20,7 @@ worker.onerror = function(event) {
 const waveformContainer = document.querySelector('.js-waveform-container')
 const wavePlotter = new WavePlotter(waveformContainer);
 
-const getCSSVar = (varName) => {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(varName)
-    .trim();
-};
+
 
 worker.onmessage = function (e) {
   // Слушаем сообщения из воркера

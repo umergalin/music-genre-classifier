@@ -21,12 +21,25 @@
   --pop-fg: black;
   --reggae-bg: #80B9F1;
   --reggae-fg: black;
+
+
+  --gray-0: #FAFAFA;
+  --gray-5: #F2F2F2;
+  --gray-30: #B3B3B3;
+  --gray-blue: #E4E4EF;
+
+  --text-primary: #1C1C1E;
+  --text-secondary: #525252;
 }
 
 * {
   margin: 0;
   padding: 0;
+}
+
+body {
   font-family: "Roboto", sans-serif;
+  color: var(--text-primary);
 }
 
 .viewport {
@@ -58,7 +71,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 48px;
+  gap: 3rem;
 }
 
 .site-name {
@@ -71,22 +84,26 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 360px;
+  height: 8rem;
+  max-width: 23rem;
 }
 
 .file-upload__drag-area {
   display: flex;
   width: 100%;
-  height: 120px;
+  height: 100%;
   justify-content: center;
   align-items: center;
-  border: 2px dashed #cfcfcf;
+  background-color: var(--gray-0);
+  border: 2px dashed var(--gray-blue);
   border-radius: 16px;
   transition: border-color 0.3s ease;
+  gap: 0.25rem;
 }
 
 .file-upload__drag-area:hover {
-  border-color: #B3B3B3;
+  border-color: var(--gray-30);
+  cursor: pointer;
 }
 
 .file-upload__error {
@@ -244,7 +261,7 @@
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .bubble-chart {
@@ -287,4 +304,19 @@
   -ms-user-select: none;
   user-select: none;
   cursor: grab;
+}
+
+.file-input-label {
+  cursor: inherit;
+}
+
+.semi-bold-subtext {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.visual-link {
+  color: var(--text-primary);
+  text-decoration: underline;
+  cursor: inherit;
 }

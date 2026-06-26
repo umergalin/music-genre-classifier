@@ -1,7 +1,7 @@
 import { loadAudio, preprocessAudio } from "./audio-processor.mjs";
 import { BubbleChart } from "./bubble-chart.mjs";
 import { WavePlotter } from "./wave-plotter.mjs";
-import { getCSSVar } from "./utils.js";
+import { parseTrackTitle, getCSSVar } from "./utils.js";
 import { PATHS, GENRES, UI_DEFAULTS } from "./config.js";
 
 console.log("hi");
@@ -28,20 +28,9 @@ const resultOutput = document.querySelector(".result .genre");
 const loader = document.querySelector(".loader");
 
 function displayTrackInfo(file) {
-  const fileName = file.name;
-
-  const lastDotIndex = fileName.lastIndexOf(".");
-  const trackTitle =
-    lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
-
-  const separatorIndex = trackTitle.indexOf("-");
-
-  if (separatorIndex !== -1) {
-    authorOutput.textContent = trackTitle.slice(0, separatorIndex).trim();
-    nameOutput.textContent = trackTitle.slice(separatorIndex + 1).trim();
-  } else {
-    nameOutput.textContent = trackTitle.trim();
-  }
+  const track = parseTrackTitle(file.name);
+  if (!track.author) authorOutput.textContent = track.author;
+  nameOutput.textContent = track.title;
 }
 
 function displayResult(genre) {

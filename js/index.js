@@ -1,12 +1,10 @@
-import { preprocessAudio } from './audio-processor.mjs'
+import { loadAudio, preprocessAudio } from './audio-processor.mjs'
 import { BubbleChart } from './bubble-chart.mjs';
 import { WavePlotter } from './wave-plotter.mjs';
-console.log("hi");
-
 import { getCSSVar } from './utils.js';
-
 import { PATHS, GENRES, UI_DEFAULTS } from './config.js';
 
+console.log("hi");
 
 const worker = new Worker(PATHS.worker, { type: 'module' });
 worker.postMessage({ type: 'loadModel', modelPath: PATHS.model });
@@ -19,8 +17,6 @@ worker.onerror = function(event) {
 
 const waveformContainer = document.querySelector('.js-waveform-container')
 const wavePlotter = new WavePlotter(waveformContainer);
-
-
 
 worker.onmessage = function (e) {
   // Слушаем сообщения из воркера
@@ -60,21 +56,6 @@ const authorOutput = document.querySelector('.metadata .author');
 const resultOutput = document.querySelector('.result .genre');
 
 const loader = document.querySelector('.loader');
-
-async function loadAudio(file) {
-  const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  try {
-    console.log(`Декодирование ${file.name}`);
-
-    const arrayBuffer = await file.arrayBuffer();
-    let audioBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
-
-    return audioBuffer;
-  } catch (err) {
-    console.warn('Ошибка при чтении файла', file.name, err);
-  }
-}
 
 function displayTrackInfo(file) {
   const fileName = file.name;

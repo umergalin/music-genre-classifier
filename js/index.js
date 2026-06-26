@@ -6,37 +6,8 @@ import { PATHS, GENRES, UI_DEFAULTS } from './config.js';
 
 console.log("hi");
 
-const worker = new Worker(PATHS.worker, { type: 'module' });
-worker.postMessage({ type: 'loadModel', modelPath: PATHS.model });
-
-worker.onerror = function(event) {
-  console.error("Ошибка в воркере:");
-  console.error(`Сообщение: ${event.message}`);
-  console.error(`Файл: ${event.filename}, Строка: ${event.lineno}`);
-};
-
 const waveformContainer = document.querySelector('.js-waveform-container')
 const wavePlotter = new WavePlotter(waveformContainer);
-
-worker.onmessage = function (e) {
-  // Слушаем сообщения из воркера
-  const message = e.data;
-  switch (message.type) {
-    case "start":
-      bubbleChart.updateStepSize(message.segmentCount);
-      wavePlotter.setSegmentsCount(message.segmentCount);
-      break;
-    case "segment":
-      const genre = GENRES[message.genreIndex];
-      wavePlotter.setSegmentColor(message.segmentIndex, getCSSVar(`--${genre.id}-bg`));
-      bubbleChart.addBubble(message.genreIndex);
-      break;
-    case "final":
-      displayResult(GENRES[message.genreIndex].id);
-      loader.classList.add("hidden");
-      break;
-  }
-};
 
 const bubbleChartContainer = document.querySelector('.bubble-chart');
 const bubbleChart = new BubbleChart(bubbleChartContainer, GENRES);
@@ -102,32 +73,7 @@ audioFileInput.addEventListener('change', () => {
   };
 }) 
 
-runAnalysisButton.addEventListener('click', async () => {
-  if (!audioFileInput.files.length) {
-    alert("Выберите аудиофайл");
-    return;
-  }
-  
-  const chosenFile = audioFileInput.files[0];
 
-  clearResults();
-  prepareForProcessing();
-
-  displayTrackInfo(chosenFile);
-
-  contentContainer.classList.add("show-result");
-
-  const audioBuffer = await loadAudio(chosenFile);
-
-  wavePlotter.render(audioBuffer);
-
-  const processedAudioData = await preprocessAudio(audioBuffer);
-
-  worker.postMessage({
-    type: 'runAnalysis',
-    audioData: processedAudioData
-  }, [processedAudioData.buffer]);
-});
 
 backToInputButton.addEventListener('click', () => {
   contentContainer.classList.remove('show-result');
@@ -159,3 +105,93 @@ function updateWindowSize() {
   bubbleChart.resize();
 }
 window.onresize = updateWindowSize;
+
+function setupWorker({ onStart, onSegment, onFinal }) {
+  const worker = new Worker(PATHS.worker, { type: "module" });
+  worker.postMessage({ type: "loadModel", modelPath: PATHS.model });
+
+  worker.onerror = function (event) {
+    console.error("Ошибка в воркере:");
+    console.error(`Сообщение: ${event.message}`);
+    console.error(`Файл: ${event.filename}, Строка: ${event.lineno}`);
+  };
+
+  worker.onmessage = function (e) {
+    // Слушаем сообщения из воркера
+    const message = e.data;
+    switch (message.type) {
+      case "start":
+        bubbleChart.updateStepSize(message.segmentCount);
+        wavePlotter.setSegmentsCount(message.segmentCount);
+        break;
+      case "segment":
+        const genre = GENRES[message.genreIndex];
+        wavePlotter.setSegmentColor(
+          message.segmentIndex,
+          getCSSVar(`--${genre.id}-bg`),
+        );
+        bubbleChart.addBubble(message.genreIndex);
+        break;
+      case "final":
+        displayResult(GENRES[message.genreIndex].id);
+        loader.classList.add("hidden");
+        break;
+    }
+  };
+
+  return worker;
+}
+
+function setupEventListeners(worker) {
+  runAnalysisButton.addEventListener("click", async () => {
+    if (!audioFileInput.files.length) {
+      alert("Выберите аудиофайл");
+      return;
+    }
+
+    const chosenFile = audioFileInput.files[0];
+
+    clearResults();
+    prepareForProcessing();
+
+    displayTrackInfo(chosenFile);
+
+    contentContainer.classList.add("show-result");
+
+    const audioBuffer = await loadAudio(chosenFile);
+
+    wavePlotter.render(audioBuffer);
+
+    const processedAudioData = await preprocessAudio(audioBuffer);
+
+    worker.postMessage(
+      {
+        type: "runAnalysis",
+        audioData: processedAudioData,
+      },
+      [processedAudioData.buffer],
+    );
+  });
+}
+
+function init() {
+  const worker = setupWorker({
+    onStart: ({ segmentCount }) => {
+      bubbleChart.updateStepSize(segmentCount);
+      wavePlotter.setSegmentsCount(segmentCount);
+    },
+    onSegment: ({ genreIndex, segmentIndex }) => {
+      const genre = GENRES[genreIndex];
+      wavePlotter.setSegmentColor(segmentIndex, getCSSVar(`--${genre.id}-bg`));
+      bubbleChart.addBubble(genreIndex);
+    },
+    onFinal: ({ genreIndex }) => {
+      displayResult(GENRES[genreIndex].id);
+      loader.classList.add("hidden");
+    },
+  });
+
+  setupEventListeners(worker);
+}
+
+init();

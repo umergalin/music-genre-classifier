@@ -30,6 +30,7 @@ const backToInputButton = document.querySelector(".js-back-trigger");
 const nameOutput = document.querySelector(".metadata .name");
 const authorOutput = document.querySelector(".metadata .author");
 
+const resultContainer = document.querySelector(".result");
 const resultOutput = document.querySelector(".result .genre");
 const loader = document.querySelector(".loader");
 
@@ -40,6 +41,7 @@ function displayTrackInfo(file) {
 }
 
 function displayResult(genre) {
+  resultContainer.classList.add("is-visible");
   resultOutput.textContent = genre.toUpperCase();
 }
 

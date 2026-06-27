@@ -180,12 +180,12 @@ body {
   color: #B3B3B3;
 
   transition: transform 0.3s ease-out;
-  transform: scaleY(0); /* Start hidden/collapsed */
-  transform-origin: top; /* Slide down from the top */
+  transform: scaleY(0);
+  transform-origin: top;
 }
 
 .result.is-visible {
-  transform: scaleY(1); /* Reveal */
+  transform: scaleY(1);
 }
 
 .result .genre {

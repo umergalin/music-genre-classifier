@@ -49,7 +49,9 @@ function clearResults() {
   // лучше сбрасывать только тогда, когда страница уже уедет за экран
   authorOutput.textContent = "";
   nameOutput.textContent = "";
+  
   resultOutput.textContent = "";
+  resultContainer.classList.remove("is-visible");
 
   wavePlotter.reset();
   bubbleChart.reset();
@@ -58,7 +60,7 @@ function clearResults() {
 function prepareForProcessing() {
   authorOutput.textContent = UI_DEFAULTS.AUTHOR;
   nameOutput.textContent = UI_DEFAULTS.NAME;
-  resultOutput.textContent = UI_DEFAULTS.STATUS;
+  resultOutput.textContent = "UI_DEFAULTS.STATUS";
 
   loader.classList.remove("hidden");
 }

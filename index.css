@@ -178,6 +178,14 @@ body {
   align-items: flex-start;
   font-size: 14px;
   color: #B3B3B3;
+
+  transition: transform 0.3s ease-out;
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+.result.is-visible {
+  transform: scaleY(1);
 }
 
 .result .genre {

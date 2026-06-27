@@ -30,6 +30,7 @@ const backToInputButton = document.querySelector(".js-back-trigger");
 const nameOutput = document.querySelector(".metadata .name");
 const authorOutput = document.querySelector(".metadata .author");
 
+const resultContainer = document.querySelector(".result");
 const resultOutput = document.querySelector(".result .genre");
 const loader = document.querySelector(".loader");
 
@@ -40,6 +41,7 @@ function displayTrackInfo(file) {
 }
 
 function displayResult(genre) {
+  resultContainer.classList.add("is-visible");
   resultOutput.textContent = genre.toUpperCase();
 }
 
@@ -47,7 +49,9 @@ function clearResults() {
   // лучше сбрасывать только тогда, когда страница уже уедет за экран
   authorOutput.textContent = "";
   nameOutput.textContent = "";
+  
   resultOutput.textContent = "";
+  resultContainer.classList.remove("is-visible");
 
   wavePlotter.reset();
   bubbleChart.reset();
@@ -56,7 +60,7 @@ function clearResults() {
 function prepareForProcessing() {
   authorOutput.textContent = UI_DEFAULTS.AUTHOR;
   nameOutput.textContent = UI_DEFAULTS.NAME;
-  resultOutput.textContent = UI_DEFAULTS.STATUS;
+  resultOutput.textContent = "UI_DEFAULTS.STATUS";
 
   loader.classList.remove("hidden");
 }

@@ -215,6 +215,8 @@ function toggleDraggingStyle(isDragging) {
 
 function setupEventListeners(worker) {
   audioFileInput.addEventListener("change", handleFileInputChange);
+
+  audioFileDragArea.addEventListener("click", () => audioFileInput.click());
   audioFileDragArea.addEventListener("dragenter", (e) => {
     e.preventDefault();
     toggleDraggingStyle(true);

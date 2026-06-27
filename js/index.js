@@ -85,6 +85,12 @@ function setupWorker({ onStart, onSegment, onFinal }) {
   return worker;
 }
 
+function validateFileType(file) {
+  if (!file.type.startsWith("audio/")) {
+    throw new Error("Пожалуйста, выберите аудиофайл");
+  }
+}
+
 function validateAudioDuration(file) {
   return new Promise((resolve, reject) => {
     const audio = new Audio();
@@ -121,7 +127,7 @@ function toggleInputHasFileStyle(hasFile) {
   audioFileDragArea.classList.toggle("has-file", hasFile);
 }
 
-function handleFileInputChange() {
+async function handleFileInputChange() {
   const file = audioFileInput.files[0];
 
   if (!file) {
@@ -130,7 +136,8 @@ function handleFileInputChange() {
   }
 
   try {
-    validateAudioDuration(file);
+    validateFileType(file);
+    await validateAudioDuration(file);
 
     console.log("Validation succeed");
     runAnalysisButton.disabled = false;

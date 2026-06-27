@@ -35,8 +35,8 @@ const loader = document.querySelector(".loader");
 
 function displayTrackInfo(file) {
   const track = parseTrackTitle(file.name);
-  if (!track.author) authorOutput.textContent = track.author;
   nameOutput.textContent = track.title;
+  if (track.author) authorOutput.textContent = track.author;
 }
 
 function displayResult(genre) {

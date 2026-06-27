@@ -10,6 +10,21 @@ export const CONFIG = {
   windowingFunction: 'hann'
 };
 
+export async function loadAudio(file) {
+  const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  try {
+    console.log(`Декодирование: ${file.name}`);
+
+    const arrayBuffer = await file.arrayBuffer();
+    let audioBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
+
+    return audioBuffer;
+  } catch (err) {
+    console.warn('Ошибка при чтении файла', file.name, err);
+  }
+}
+
 function toMono(audioBuffer) {
   const channelNum = audioBuffer.numberOfChannels;
   const len = audioBuffer.length;

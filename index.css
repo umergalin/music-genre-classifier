@@ -21,12 +21,31 @@
   --pop-fg: black;
   --reggae-bg: #80B9F1;
   --reggae-fg: black;
+
+
+  --gray-0: #FAFAFA;
+  --gray-5: #F2F2F2;
+  --gray-30: #B3B3B3;
+  --gray-blue: #E4E4EF;
+
+  --text-primary: #1C1C1E;
+  --text-secondary: #525252;
+
+  --error-color: #f28b82;
+
+  --filename-height: 3rem;
+  --border-width: 2px;
+  --drag-area-radius: 16px;
 }
 
 * {
   margin: 0;
   padding: 0;
+}
+
+body {
   font-family: "Roboto", sans-serif;
+  color: var(--text-primary);
 }
 
 .viewport {
@@ -58,28 +77,12 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 48px;
+  gap: 3rem;
 }
 
 .site-name {
   font-size: 48px;
   font-weight: bold;
-}
-
-.input-container {
-  display: flex;
-  width: 100%;
-  max-width: 360px;
-  height: 120px;
-  justify-content: center;
-  align-items: center;
-  border: 2px dashed #cfcfcf;
-  border-radius: 16px;
-  transition: border-color 0.3s ease;
-}
-
-.input-container:hover {
-  border-color: #B3B3B3;
 }
 
 .visually-hidden {
@@ -94,12 +97,13 @@
 }
 
 .btn {
-  padding: 8px 12px;
+  padding: 0.5rem 1rem;
   font-size: 16px;
   border: none;
   background-color: #FFF;
   font-weight: bold;
   cursor: pointer;
+  border-radius: 1rem;
 }
 
 .btn:disabled {
@@ -230,7 +234,7 @@
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .bubble-chart {
@@ -273,4 +277,159 @@
   -ms-user-select: none;
   user-select: none;
   cursor: grab;
+}
+
+.semi-bold-subtext {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.file-upload {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 8rem;
+  max-width: 23rem;
+  overflow: hidden;
+  border-radius: var(--drag-area-radius);
+}
+
+.file-input-label {
+  cursor: inherit;
+}
+
+.visual-link,
+.text-hover {
+  color: var(--text-primary);
+}
+
+.visual-link {
+  text-decoration: underline;
+  cursor: inherit;
+}
+
+.file-upload__drag-area {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--gray-0);
+  border: var(--border-width) dashed var(--gray-blue);
+  border-radius: var(--drag-area-radius);
+  transition: border-color 0.3s ease, background-color 0.25s ease, height 0.3s ease;
+  gap: 0.25rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.file-upload__drag-area::before {
+  content: '';
+  position: absolute; 
+  inset: calc(-1 * var(--border-width));
+  z-index: -1;
+  background: url('./assets/img/tom-hardy.png');
+  background-position: 50% 40%;  
+  background-size: 45%;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.1s ease-out;
+  transform: translateZ(0);
+}
+
+.file-upload__drag-area:hover:not(.has-file) {
+  border-color: var(--gray-30);
+  cursor: pointer;
+}
+
+.file-upload__drag-area.is-dragging::before {
+  opacity: 0.4;
+  transition: opacity 0.8s ease-in;
+}
+
+.file-upload__drag-area.is-dragging {
+  background-color: var(--gray-blue);
+  border: var(--gray-30);
+}
+
+.file-upload__drag-area .text-hover {
+  display: none;
+}
+
+.file-upload__drag-area.is-dragging .text-default {
+  display: none;
+}
+
+.file-upload__drag-area.is-dragging .text-hover {
+  display: block;
+}
+
+.file-upload__drag-area .file-upload__preview {
+  display: none;
+}
+
+.file-upload__drag-area.has-file .file-input-label {
+  display: none;
+}
+
+.file-upload__drag-area.has-file .file-upload__preview {
+  display: flex;
+}
+
+.file-upload__drag-area.has-file {
+  height: 3rem;
+  border-style: solid;
+}
+
+.file-upload__preview {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.file-upload__name {
+  margin-left: 1rem;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.btn-remove-file {
+  height: var(--filename-height);
+  aspect-ratio: 1;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.btn-remove-file:hover {
+  color: red;
+}
+
+.file-upload__error {
+  position: absolute;
+  background-color: var(--error-color);
+  top: 0;
+  padding: 0.3rem;
+  font-size: 0.8rem;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  z-index: 1;
+  transform: translateY(-100%);
+  transition: transform 0.15s ease-in;
+}
+
+.file-upload__error.has-error {
+  transform: translateY(0);
+  transition: transform 0.25s ease-out;
 }

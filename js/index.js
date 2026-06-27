@@ -6,6 +6,8 @@ import { PATHS, GENRES, UI_DEFAULTS } from "./config.js";
 
 console.log("hi");
 
+let errorOutputTimer = null;
+
 const waveformContainer = document.querySelector(".js-waveform-container");
 const wavePlotter = new WavePlotter(waveformContainer);
 
@@ -17,6 +19,7 @@ const audioFileDragArea = document.querySelector(".file-upload__drag-area");
 const runAnalysisButton = document.querySelector(".js-run-analysis");
 const uploadedFilenameOutput = document.querySelector(".js-input-file-name");
 const removeUploadedFileButton = document.querySelector(".js-remove-file");
+const errorOutput = document.querySelector(".js-error-output");
 
 const pageInput = document.querySelector(".page-input");
 const pageResult = document.querySelector(".page-result");
@@ -127,6 +130,24 @@ function toggleInputHasFileStyle(hasFile) {
   audioFileDragArea.classList.toggle("has-file", hasFile);
 }
 
+function showInputError(message) {
+  if (errorOutputTimer) {
+    clearTimeout(errorOutputTimer);
+  }
+
+  errorOutput.textContent = message;
+  errorOutput.classList.add("has-error");
+
+  errorOutputTimer = setTimeout(() => {
+    errorOutput.textContent = "";
+    errorOutput.classList.remove("has-error");
+
+    setTimeout(() => {
+      errorOutput.textContent = "";
+    }, 150);
+  }, 2500)
+}
+
 async function handleFileInputChange() {
   const file = audioFileInput.files[0];
 
@@ -145,6 +166,7 @@ async function handleFileInputChange() {
     toggleInputHasFileStyle(true);
   } catch (error) {
     console.error("Validation failed");
+    showInputError(error.message);
     resetInputState();
   }
 }

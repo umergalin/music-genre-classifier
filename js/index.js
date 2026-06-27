@@ -16,6 +16,7 @@ const audioFileInput = document.getElementById("audio-file-input");
 const audioFileDragArea = document.querySelector(".file-upload__drag-area");
 const runAnalysisButton = document.querySelector(".js-run-analysis");
 const uploadedFilenameOutput = document.querySelector(".js-input-file-name");
+const removeUploadedFileButton = document.querySelector(".js-remove-file");
 
 const pageInput = document.querySelector(".page-input");
 const pageResult = document.querySelector(".page-result");
@@ -106,13 +107,14 @@ function handleCancelUpload() {
   resetInputState();
 }
 
-// 4. Helper to clear/restore input state (DRY principle)
 function resetInputState() {
-  audioFileInput.value = "";       // Clear the actual file input
-  currentTrackName = "";           // Reset stored name
-  hideTrackNameDisplay();          // Remove name from UI
-  showCancelButton(false);         // Hide the cancel button
-  runAnalysisButton.disabled = true; // Disable the action button
+  audioFileInput.value = "";
+  runAnalysisButton.disabled = true; 
+  toggleInputHasFileStyle(false);
+}
+
+function toggleInputHasFileStyle(hasFile) {
+  audioFileDragArea.classList.toggle("has-file", hasFile);
 }
 
 function handleFileInputChange() {
@@ -125,24 +127,20 @@ function handleFileInputChange() {
 
   validateAudioDuration(file, {
     onValid: () => {
-      console.log('file is valid');
-      uploadedFilenameOutput.textContent = file.name;
+      console.log("file is valid");
       runAnalysisButton.disabled = false;
-      audioFileDragArea.classList.add("has-file");
+      uploadedFilenameOutput.textContent = file.name;
+      toggleInputHasFileStyle(true);
     },
     onInvalid: () => {
       console.log("file is invalid");
-      audioFileInput.value = "";
-      runAnalysisButton.disabled = true;
-      audioFileDragArea.classList.remove("has-file");
+      resetInputState();
     },
   });
 }
 
 function handleBackToInput() {
   contentContainer.classList.remove("show-result");
-  audioFileInput.value = "";
-  runAnalysisButton.disabled = true;
   clearResults();
 }
 
@@ -185,7 +183,6 @@ function toggleDraggingStyle(isDragging) {
 
 function setupEventListeners(worker) {
   audioFileInput.addEventListener("change", handleFileInputChange);
-
   audioFileDragArea.addEventListener("dragenter", (e) => {
     e.preventDefault();
     toggleDraggingStyle(true);
@@ -197,7 +194,7 @@ function setupEventListeners(worker) {
     // toggleDraggingStyle(false);
   });
   audioFileDragArea.addEventListener("drop", (e) => handleDrop(e));
-
+  removeUploadedFileButton.addEventListener("click", resetInputState)
   backToInputButton.addEventListener("click", handleBackToInput);
   runAnalysisButton.addEventListener("click", () => handleRunAnalysis(worker));
   window.addEventListener("resize", () => bubbleChart.resize());

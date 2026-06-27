@@ -85,25 +85,29 @@ function setupWorker({ onStart, onSegment, onFinal }) {
   return worker;
 }
 
-function validateAudioDuration(file, { onValid, onInvalid }) {
-  const audio = new Audio();
-  const objectUrl = URL.createObjectURL(file);
-  audio.src = objectUrl;
+function validateAudioDuration(file) {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio();
+    const objectUrl = URL.createObjectURL(file);
+    audio.src = objectUrl;
 
-  audio.onloadedmetadata = function () {
-    URL.revokeObjectURL(objectUrl);
+    audio.onloadedmetadata = function () {
+      URL.revokeObjectURL(objectUrl);
+      if (audio.duration < 3) {
+        reject(new Error("Файл слишком короткий (минимум 3 секунды)"));
+      } else {
+        resolve();
+      }
+    };
 
-    if (audio.duration < 3) {
-      console.log("Файл слишком короткий (минимум 3 секунды)");
-      onInvalid();
-    } else {
-      onValid();
-    }
-  };
+    audio.onerror = function () {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Не удалось прочитать аудиофайл"));
+    };
+  });
 }
 
 function handleCancelUpload() {
-  // Restore everything back to the original state
   resetInputState();
 }
 
@@ -125,18 +129,17 @@ function handleFileInputChange() {
     return;
   }
 
-  validateAudioDuration(file, {
-    onValid: () => {
-      console.log("file is valid");
-      runAnalysisButton.disabled = false;
-      uploadedFilenameOutput.textContent = file.name;
-      toggleInputHasFileStyle(true);
-    },
-    onInvalid: () => {
-      console.log("file is invalid");
-      resetInputState();
-    },
-  });
+  try {
+    validateAudioDuration(file);
+
+    console.log("Validation succeed");
+    runAnalysisButton.disabled = false;
+    uploadedFilenameOutput.textContent = file.name;
+    toggleInputHasFileStyle(true);
+  } catch (error) {
+    console.error("Validation failed");
+    resetInputState();
+  }
 }
 
 function handleBackToInput() {

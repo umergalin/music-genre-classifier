@@ -97,12 +97,13 @@ body {
 }
 
 .btn {
-  padding: 8px 12px;
+  padding: 0.5rem 1rem;
   font-size: 16px;
   border: none;
   background-color: #FFF;
   font-weight: bold;
   cursor: pointer;
+  border-radius: 1rem;
 }
 
 .btn:disabled {

@@ -36,6 +36,8 @@
   --filename-height: 3rem;
   --border-width: 2px;
   --drag-area-radius: 16px;
+
+  --loader-size: 30px;
 }
 
 * {
@@ -49,15 +51,18 @@ body {
 }
 
 .viewport {
+  display: flex;
   width: 100vw;
   height: 100vh;
   position: relative;
-  /*overflow: hidden;*/
+  justify-content: center;
+  overflow: hidden;
 }
 
 .content-container {
   display: flex;
   width: 100%;
+  max-width: 960px;
   height: 200%;
   transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
   flex-direction: column;
@@ -66,7 +71,6 @@ body {
 .page {
   display: flex;
   height: 100vh;
-  padding: 12px 16px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -106,6 +110,10 @@ body {
   border-radius: 1rem;
 }
 
+.btn:hover {
+  background-color: var(--gray-5);
+}
+
 .btn:disabled {
   background-color: #F2F2F2;
   color: #D3D3D3;
@@ -119,6 +127,7 @@ body {
 }
 
 .btn--run:hover:not(:disabled) {
+  background-color: #FFD24D;
   transform: translateY(-1px);
 }
 
@@ -126,7 +135,7 @@ body {
   transform: translateY(0);
 }
 
-.show-result {
+.show-processing-page {
   transform: translateY(-50%);
 }
 
@@ -135,6 +144,12 @@ body {
   height: 36px;
   width: 90%;
   max-width: 720px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.waveform.show {
+  opacity: 1;
 }
 
 .task-info {
@@ -147,7 +162,7 @@ body {
 }
 
 .task-name {
-  color: #B3B3B3;
+  color: var(--gray-30);
 }
 
 .metadata {
@@ -197,7 +212,8 @@ body {
 }
 
 .page-result {
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .btn--back {
@@ -207,28 +223,35 @@ body {
 }
 
 .arrow-icon {
-  /* Иконка станет такой же высоты, как заглавная буква текста */
   height: 1em;
   width: 1em;
 
-  /* Чтобы иконка не "скакала" и стояла ровно по центру строки */
   vertical-align: middle; 
   
-  /* Если используешь flex на кнопке (рекомендуется), 
-     то vertical-align не нужен, используй это: */
   display: inline-block;
-  flex-shrink: 0; /* Чтобы иконка не сжималась, если текста много */
+  flex-shrink: 0;
 }
 
 .loader {
-    width: 30px;
-    height: 30px;
-    border: 4px solid #cfcfcf;
-    border-bottom-color: transparent;
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
+  width: var(--loader-size);
+  height: var(--loader-size);
+  border: 4px solid #cfcfcf;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  max-height: var(--loader-size);
+  opacity: 1;
+  transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+.loader.hidden {
+  display: inline-block !important;
+  opacity: 0;
+  max-height: 0;
+  animation-play-state: paused;
 }
 
 @keyframes rotation {
@@ -284,7 +307,6 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  cursor: grab;
 }
 
 .semi-bold-subtext {
@@ -440,4 +462,17 @@ body {
 .file-upload__error.has-error {
   transform: translateY(0);
   transition: transform 0.25s ease-out;
+}
+
+.result-top, .result-bottom {
+  padding: 2rem;
+}
+
+.result-middle {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
 }

@@ -16,7 +16,7 @@ export class WavePlotter {
   #segments = [];
 
   #WAVEFORM_STYLE = {
-    color: '#D9D9D9',
+    color: "#D9D9D9",
     delimiterSize: 3,
     spacingSize: 3,
   };
@@ -27,7 +27,7 @@ export class WavePlotter {
     this.#canvas = document.createElement("canvas");
     container.append(this.#canvas);
 
-    this.#ctx = this.#canvas.getContext('2d');
+    this.#ctx = this.#canvas.getContext("2d");
 
     this.#initResizeObserver();
   }
@@ -63,7 +63,7 @@ export class WavePlotter {
     const rms = this.#calculateRMS(stepSize, stepCount);
     this.#rmsHistory = rms;
 
-    const maxRMS = rms.reduce((max, val) => val > max ? val : max);
+    const maxRMS = rms.reduce((max, val) => (val > max ? val : max));
     this.#scaleFactor = maxRMS > 0 ? 1 / maxRMS : 1;
   }
 
@@ -89,7 +89,7 @@ export class WavePlotter {
           count++;
         }
       }
-      rmsValues[i] = count > 0 ? (totalSumSquares / count) : 0;
+      rmsValues[i] = count > 0 ? totalSumSquares / count : 0;
     }
 
     return rmsValues;
@@ -129,6 +129,10 @@ export class WavePlotter {
     this.#ctx.stroke();
   }
 
+  #toggleShow(toShow) {
+    this.#container.classList.toggle("show", toShow);
+  }
+
   render(audioBuffer) {
     if (audioBuffer && !this.#channels) {
       this.#channels = [];
@@ -137,11 +141,13 @@ export class WavePlotter {
       }
     }
 
-    if(!this.#channels) return;
+    if (!this.#channels) return;
 
     const { delimiterSize, spacingSize } = this.#WAVEFORM_STYLE;
     const width = this.#container.clientWidth;
-    const stepCount = Math.floor((width + spacingSize) / (delimiterSize + spacingSize)); // сколько вообще делений помещается на график
+    const stepCount = Math.floor(
+      (width + spacingSize) / (delimiterSize + spacingSize),
+    ); // сколько вообще делений помещается на график
 
     if (stepCount !== this.#rmsHistory.length) {
       const totalSamples = this.#channels[0].length;
@@ -154,9 +160,11 @@ export class WavePlotter {
     }
 
     this.#drawWaveform();
+    this.#toggleShow(true);
   }
 
   #clearCanvas() {
+    this.#toggleShow(false);
     this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
   }
 
@@ -189,7 +197,7 @@ export class WavePlotter {
     this.#segments = Array.from(Array(count), () => ({
       start: 0,
       end: 0,
-      color: this.#WAVEFORM_STYLE.color
+      color: this.#WAVEFORM_STYLE.color,
     }));
 
     if (oldCount !== count) this.#calculateSegments();
@@ -207,8 +215,8 @@ export class WavePlotter {
     this.#segments.forEach((segment, i) => {
       segment.start = Math.round(currentPos);
       currentPos += step;
-      segment.end = (i === segmentCount - 1) ? barsCount : Math.round(currentPos);
-    })
+      segment.end = i === segmentCount - 1 ? barsCount : Math.round(currentPos);
+    });
   }
 
   setSegmentColor(index, color) {

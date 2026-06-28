@@ -176,7 +176,7 @@ async function handleFileInputChange() {
 }
 
 function handleBackToInput() {
-  contentContainer.classList.remove("show-result");
+  contentContainer.classList.remove("show-processing-page");
   clearResults();
 }
 
@@ -190,7 +190,7 @@ async function startAnalysis(file, worker) {
   prepareForProcessing();
 
   displayTrackInfo(file);
-  contentContainer.classList.add("show-result");
+  contentContainer.classList.add("show-processing-page");
 
   const audioBuffer = await loadAudio(file);
   wavePlotter.render(audioBuffer);

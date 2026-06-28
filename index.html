@@ -45,32 +45,40 @@
       </section>
     
       <section class="page page-result">
-        <div class="task-info">
-          <p class="task-name">Анализ</p>
-          <div class="metadata">
-            <p class="name">Неизвестно</p>
-            <p class="author-block">
-              от <span class="author">Неизвестен</span>
-            </p>
+        <div class="result-top">
+          <div class="task-info">
+            <p class="task-name">Анализ</p>
+            <div class="metadata">
+              <p class="name">Неизвестно</p>
+              <p class="author-block">
+                от <span class="author">Неизвестен</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="result-middle">
+          <span class="loader hidden"></span>
+        
+          <div class="waveform js-waveform-container"></div>
+        
+          <div class="bubble-chart"></div>
+        
+          <div class="result">
+            <span class="label">жанр</span>
+            <span class="genre">Обработка...</span>
           </div>
         </div>
     
-        <span class="loader hidden"></span>
         
-        <div class="waveform js-waveform-container"></div>
-    
-        <div class="bubble-chart"></div>
-    
-        <div class="result">
-          <span class="label">жанр</span>
-          <span class="genre">Обработка...</span>
-        </div>
-    
-        <button class="btn btn--back js-back-trigger">
+        <div class="result-bottom">
+          <button class="btn btn--back js-back-trigger">
           <svg class="arrow-icon" fill="#000000" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
             <path d="M26.025 14.496l-14.286-.001 6.366-6.366L15.979 6 5.975 16.003 15.971 26l2.129-2.129-6.367-6.366h14.29z"/>
           </svg>
           На главную</button>
+        </div>
+        
       </section>
     </div>
   </div>

@@ -1,8 +1,6 @@
 import { getCSSVar } from "./utils.js";
 
 export class BubbleChart {
-    #gravity = 0.01;
-    #friction = 0.95;
     #container;
     #bubbles;
     #labelToBubble;
@@ -13,6 +11,8 @@ export class BubbleChart {
     #maxPointGenre;
     #genres
 
+    #gravity = 0.01;
+    #friction = 0.95;
     #MIN_FONT_SIZE = 22; 
     #MAX_FONT_SIZE = 80;
 
@@ -41,7 +41,6 @@ export class BubbleChart {
 
     reset() {
         for(const bubble of this.#bubbles) {
-            console.log(bubble);
             this.#container.removeChild(bubble.element);
         }
         this.#bubbles = [];
@@ -55,16 +54,11 @@ export class BubbleChart {
 
     updateStepSize(steps) {
         this.#stepFontSize = (this.#MAX_FONT_SIZE - this.#MIN_FONT_SIZE) / steps;
-
-        console.log("max size: " + this.#MAX_FONT_SIZE);
-        console.log("steps: " + steps);
-        console.log("step size: " + this.#stepFontSize);
     }
 
     addBubble(genreIndex) {
         const genre = this.#genres[genreIndex];
 
-        console.log(`center x: ${this.#center.offsetLeft}, y: ${this.#center.offsetTop}`);
         if (this.#labelToBubble.has(genre.id)) {
             // update bubble
             const bubbleObj = this.#labelToBubble.get(genre.id);
@@ -90,20 +84,15 @@ export class BubbleChart {
         bubble.style.backgroundColor = getCSSVar(`--${genre.id}-bg`);
 
         bubble.textContent = genre.emoji;
-        console.log(`вставляю эмодзи ${genre.emoji} который соотвествует жанру ${genre.id}`);
         bubble.title = genre.label;
 
         bubble.style.left = `${x}px`;
         bubble.style.top = `${y}px`;
 
-        // bubble.classList.add("fade-in");
-
         this.#container.append(bubble);
 
         bubble.offsetWidth; // forsing redrawing
         bubble.style.fontSize = `${this.#MIN_FONT_SIZE}px`;
-
-        console.log(bubble.clientWidth); // надо обновлять радиус при пересчете кадра (по другому отслеживать сложнее)
 
         const bubbleObj = {
             element: bubble,
@@ -217,7 +206,7 @@ export class BubbleChart {
             b.vel.x *= this.#friction;
             b.vel.y *= this.#friction;
 
-            // preventing from leaving container
+            // Предотвращаем выход за пределы контейнера
             const c = this.#container;
             b.pos.x = Math.max(
                 c.offsetLeft + b.radius,

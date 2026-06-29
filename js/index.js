@@ -4,8 +4,6 @@ import { WavePlotter } from "./wave-plotter.mjs";
 import { parseTrackTitle, getCSSVar } from "./utils.js";
 import { PATHS, GENRES, UI_DEFAULTS } from "./config.js";
 
-console.log("hi");
-
 let errorOutputTimer = null;
 
 const waveformContainer = document.querySelector(".js-waveform-container");
@@ -163,12 +161,10 @@ async function handleFileInputChange() {
     validateFileType(file);
     await validateAudioDuration(file);
 
-    console.log("Validation succeed");
     runAnalysisButton.disabled = false;
     uploadedFilenameOutput.textContent = file.name;
     toggleInputHasFileStyle(true);
   } catch (error) {
-    console.error("Validation failed");
     showInputError(error.message);
     resetInputState();
   }

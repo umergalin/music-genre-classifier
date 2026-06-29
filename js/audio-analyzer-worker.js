@@ -2,6 +2,7 @@ import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/+esm';
 import { streamPredictions } from './audio-analyzer.mjs';
 
 let modelPromise = null;
+let aborted = false;
 
 function loadModel(modelPath) {
   console.log('загружаю модель');
@@ -23,7 +24,9 @@ async function runAnalysis(audioData) {
 
   const predictionsStream = streamPredictions(audioData, model);
 
+  aborted = false;
   for await (const message of predictionsStream) {
+    if (aborted) break;
     self.postMessage(message);
   }
 }
@@ -37,6 +40,9 @@ onmessage = function (e) { // Слушаем сообщения из основ�
       break;
     case 'runAnalysis':
       runAnalysis(audioData)
+      break;
+    case 'abort': 
+      aborted = true; 
       break;
   }
 }

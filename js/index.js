@@ -195,7 +195,8 @@ function waitPageSlide() {
   });
 }
 
-async function handleBackToInput() {
+async function handleBackToInput(worker) {
+  worker.postMessage({ type: 'abort' });
   contentContainer.classList.remove("show-processing-page");
   await waitPageSlide();
   clearResults();
@@ -257,7 +258,7 @@ function setupEventListeners(worker) {
     e.stopPropagation();
     resetInputState();
   });
-  backToInputButton.addEventListener("click", handleBackToInput);
+  backToInputButton.addEventListener("click", () => handleBackToInput(worker));
   runAnalysisButton.addEventListener("click", () => handleRunAnalysis(worker));
   window.addEventListener("resize", () => bubbleChart.resize());
 }

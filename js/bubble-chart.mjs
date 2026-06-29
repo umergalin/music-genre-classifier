@@ -4,7 +4,6 @@ export class BubbleChart {
     #gravity = 0.01;
     #friction = 0.95;
     #container;
-    // #labels;
     #bubbles;
     #labelToBubble;
     #spawns;
@@ -14,12 +13,11 @@ export class BubbleChart {
     #maxPointGenre;
     #genres
 
-    #MIN_FONT_SIZE = 22; // const
-    #MAX_FONT_SIZE = 80; // const
+    #MIN_FONT_SIZE = 22; 
+    #MAX_FONT_SIZE = 80;
 
     constructor(container, genres) {
         this.#container = container;
-        // this.#labels = [...labels];
         this.#bubbles = [];
         this.#labelToBubble = new Map();
 

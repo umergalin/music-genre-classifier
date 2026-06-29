@@ -19,31 +19,25 @@
           <header class="site-name-container">
             <h1 class="site-name">Определитель жанра</h1>
           </header>
-
           <div class="file-upload">
-            <div class="file-upload__error js-error-output">Файл слишком короткий (минимум 3 секунды)</div>
+            <div class="file-upload__error js-error-output">Ошибка</div>
             <div class="file-upload__drag-area">
               <div class="file-input-label semi-bold-subtext">
                 <input id="audio-file-input" type="file" accept="audio/*" class="visually-hidden" />
-
                 <span class="text-default" aria-label="Перетащите или выберите аудиофайл">
                   Перетащите или <span class="visual-link">выберите</span> аудиофайл
                 </span>
-                
                 <span class="text-hover" aria-hidden="true">Отпустите, чтобы загрузить</span>
               </div>
-
               <div class="file-upload__preview js-file-preview">
                   <span class="file-upload__name js-input-file-name"></span>
                   <button type="button" class="btn-remove-file js-remove-file semi-bold-subtext" aria-label="Удалить файл">✕</button> 
               </div>
             </div>
           </div>
-          
           <button class="btn btn--run js-run-analysis" disabled>Начать анализ</button>
         </div>
       </section>
-    
       <section class="page page-result">
         <div class="result-top">
           <div class="task-info">
@@ -56,21 +50,15 @@
             </div>
           </div>
         </div>
-        
         <div class="result-middle">
           <span class="loader hidden"></span>
-        
           <div class="waveform js-waveform-container"></div>
-        
           <div class="bubble-chart"></div>
-        
           <div class="result">
             <span class="label">жанр</span>
             <span class="genre">Обработка...</span>
           </div>
         </div>
-    
-        
         <div class="result-bottom">
           <button class="btn btn--back js-back-trigger">
           <svg class="arrow-icon" fill="#000000" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
@@ -78,7 +66,6 @@
           </svg>
           На главную</button>
         </div>
-        
       </section>
     </div>
   </div>

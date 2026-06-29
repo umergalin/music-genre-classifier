@@ -59,7 +59,7 @@ export class WavePlotter {
     this.#canvas.remove();
   }
 
-  #recordRMS(stepSize, stepCount) {
+  #computeRMS(stepSize, stepCount) {
     const rms = this.#calculateRMS(stepSize, stepCount);
     this.#rmsHistory = rms;
 
@@ -154,23 +154,23 @@ export class WavePlotter {
       const stepSize = Math.ceil(totalSamples / stepCount);
 
       this.#updateSize();
-      this.#recordRMS(stepSize, stepCount);
+      this.#computeRMS(stepSize, stepCount);
     } else {
-      this.#clearCanvas();
+      this.#clearAndHide();
     }
 
     this.#drawWaveform();
     this.#toggleShow(true);
   }
 
-  #clearCanvas() {
+  #clearAndHide() {
     this.#toggleShow(false);
     this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
   }
 
   reset() {
     this.#segments = [];
-    this.#clearCanvas();
+    this.#clearAndHide();
   }
 
   #updateSize() {
@@ -207,7 +207,7 @@ export class WavePlotter {
     const barsCount = this.#rmsHistory.length;
     const segmentCount = this.#segments.length;
 
-    if (segmentCount === 0) return [];
+    if (segmentCount === 0) return;
 
     const step = barsCount / segmentCount;
     let currentPos = 0;

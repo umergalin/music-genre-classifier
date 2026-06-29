@@ -1,6 +1,5 @@
 import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/+esm';
-import { extractMFCCfromSegment } from './audio-processor.mjs';
-import { CONFIG } from './audio-processor.mjs';
+import { extractMFCCfromSegment, CONFIG } from './audio-processor.mjs';
 
 export async function* streamPredictions(audioData, model) {
   try {
@@ -18,18 +17,14 @@ export async function* streamPredictions(audioData, model) {
     const predictions = [];
 
     for (let i = 0; i < segmentCount; i++) {
-      console.log(`получение ${i}-ого сегмента`);
       const segmentStart = startOffset + i * samplesPerSegment;
-      const segmentEnd = segmentStart + samplesPerSegment;
-
-      const segment = audioData.subarray(segmentStart, segmentEnd);
+      const segment = audioData.subarray(segmentStart, segmentStart + samplesPerSegment);
 
       const mfcc = extractMFCCfromSegment(segment, mfccsPerSegment);
       if (!mfcc) continue;
 
       // i eat cement
-      const tensor = tf.tensor(mfcc).expandDims(0).expandDims(-1);
-
+      const tensor = tf.tidy(() => tf.tensor(mfcc).expandDims(0).expandDims(-1));
       const prediction = model.predict(tensor);
       const data = await prediction.data();
       const maxIndex = data.indexOf(Math.max(...data));
@@ -45,16 +40,10 @@ export async function* streamPredictions(audioData, model) {
     const counts = {};
     predictions.forEach(p => counts[p] = (counts[p] || 0) + 1);
 
-    const sortedGenres = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-    const totalMaxIndex = sortedGenres[0];
-
-    console.log("\n--- Результаты ---");
-    console.log("Сегментов обработано:", segmentCount);
-    console.log("Предсказанные жанры по сегментам:", predictions.join(', '));
-    console.log("Итоговый жанр:", Number(totalMaxIndex));
+    const totalMaxIndex = Number(Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0]);
 
     yield { type: 'final', genreIndex: totalMaxIndex };
   } catch (error) {
-    console.error("Ошибка в генераторе:", error);
+    self.postMessage({ type: "error", message: error.message });
   }
 }

@@ -46,7 +46,6 @@ function displayResult(genre) {
 }
 
 function clearResults() {
-  // лучше сбрасывать только тогда, когда страница уже уедет за экран
   authorOutput.textContent = "";
   nameOutput.textContent = "";
   

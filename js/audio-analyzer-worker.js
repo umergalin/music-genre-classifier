@@ -12,11 +12,12 @@ async function runAnalysis(audioData) {
   const model = await modelPromise;
   const predictionsStream = streamPredictions(audioData, model);
 
-  aborted = false;
   for await (const message of predictionsStream) {
     if (aborted) break;
     self.postMessage(message);
   }
+
+  aborted = false;
 }
 
 onmessage = function (e) {

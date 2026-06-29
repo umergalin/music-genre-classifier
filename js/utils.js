@@ -1,7 +1,11 @@
 export function getCSSVar(varName) {
-  return getComputedStyle(document.documentElement)
+  const value = getComputedStyle(document.documentElement)
     .getPropertyValue(varName)
     .trim();
+
+  if (!value) throw new Error(`CSS variable ${varName} not found`);
+
+  return value;
 }
 
 export function parseTrackTitle(fileName) {

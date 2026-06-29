@@ -175,8 +175,29 @@ async function handleFileInputChange() {
   }
 }
 
-function handleBackToInput() {
+function waitPageSlide() {
+  return new Promise((resolve) => {
+    const rawDelay = getCSSVar("--page-change-time").trim();
+    const delay = parseFloat(rawDelay) * 1000;
+    const fallbackTimer = setTimeout(() => {
+      contentContainer.removeEventListener("transitionend", handler);
+      resolve();
+    }, delay);
+
+    function handler(e) {
+      if (e.target === contentContainer && e.propertyName === "transform") {
+        clearTimeout(fallbackTimer);
+        contentContainer.removeEventListener("transitionend", handler);
+        resolve();
+      }
+    }
+    contentContainer.addEventListener("transitionend", handler);
+  });
+}
+
+async function handleBackToInput() {
   contentContainer.classList.remove("show-processing-page");
+  await waitPageSlide();
   clearResults();
 }
 

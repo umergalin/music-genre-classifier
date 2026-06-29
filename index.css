@@ -38,6 +38,8 @@
   --drag-area-radius: 16px;
 
   --loader-size: 30px;
+
+  --page-change-time: 0.8s;
 }
 
 * {
@@ -64,7 +66,7 @@ body {
   width: 100%;
   max-width: 960px;
   height: 200%;
-  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+  transition: transform var(--page-change-time) ease-in-out, opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
   flex-direction: column;
 }
 
@@ -280,7 +282,6 @@ body {
 .chart-center {
     width: 1px;
     height: 1px;
-    /* background-color: red; */
 }
 
 .bubble {

@@ -275,7 +275,7 @@ function init() {
       bubbleChart.addBubble(genreIndex);
     },
     onFinal: ({ genreIndex }) => {
-      displayResult(GENRES[genreIndex].id);
+      displayResult(GENRES[genreIndex].label);
       loader.classList.add("hidden");
     },
   });

@@ -253,7 +253,10 @@ function setupEventListeners(worker) {
     // toggleDraggingStyle(false);
   });
   audioFileDragArea.addEventListener("drop", (e) => handleDrop(e));
-  removeUploadedFileButton.addEventListener("click", resetInputState)
+  removeUploadedFileButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    resetInputState();
+  });
   backToInputButton.addEventListener("click", handleBackToInput);
   runAnalysisButton.addEventListener("click", () => handleRunAnalysis(worker));
   window.addEventListener("resize", () => bubbleChart.resize());

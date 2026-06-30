@@ -9,6 +9,7 @@ function loadModel(modelPath) {
 }
 
 async function runAnalysis(audioData) {
+  aborted = false;
   const model = await modelPromise;
   const predictionsStream = streamPredictions(audioData, model);
 
@@ -16,8 +17,6 @@ async function runAnalysis(audioData) {
     if (aborted) break;
     self.postMessage(message);
   }
-
-  aborted = false;
 }
 
 onmessage = function (e) {

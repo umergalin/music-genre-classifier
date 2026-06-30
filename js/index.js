@@ -5,6 +5,7 @@ import { parseTrackTitle, getCSSVar } from "./utils.js";
 import { PATHS, GENRES, UI_DEFAULTS } from "./config.js";
 
 let errorOutputTimer = null;
+let currentRunToken = null;
 
 const waveformContainer = document.querySelector(".js-waveform-container");
 const wavePlotter = new WavePlotter(waveformContainer);
@@ -191,6 +192,7 @@ function waitPageSlide() {
 }
 
 async function handleBackToInput(worker) {
+  if (currentRunToken) currentRunToken.cancelled = true;
   worker.postMessage({ type: 'abort' });
   contentContainer.classList.remove("show-processing-page");
   await waitPageSlide();
@@ -203,6 +205,9 @@ async function handleRunAnalysis(worker) {
 }
 
 async function startAnalysis(file, worker) {
+  const token = { cancelled: false };
+  currentRunToken = token;
+
   clearResults();
   prepareForProcessing();
 
@@ -210,8 +215,11 @@ async function startAnalysis(file, worker) {
   contentContainer.classList.add("show-processing-page");
 
   const audioBuffer = await loadAudio(file);
+  if (token.cancelled) return;
+
   wavePlotter.render(audioBuffer);
   const processedAudioData = await preprocessAudio(audioBuffer);
+  if (token.cancelled) return;
 
   worker.postMessage(
     {
